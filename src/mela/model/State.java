@@ -5,6 +5,7 @@ package mela.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 /**
  * @author ludovicaluisavissat
  *
@@ -15,15 +16,24 @@ public class State {
 	private final int locations;
 	private final int[][] state;  
 	
-	//I removed the private method, ok?
-	
-    public State(int agents, int locations, int[][] state){
+    private State(int agents, int locations, int[][] state){
+    	this.agents = agents;
+    	this.locations = locations;
+    	this.state = state;
+    }
+    
+    public State(int agents, int locations, BiFunction<Integer, Integer, Integer> agentAllocationFunction) {
     	this.agents = agents;
     	this.locations = locations;
     	this.state = new int[agents][locations];
-    }
-    
-    public int get(int agent, int location) {
+    	for( int i=0 ; i < agents ; i++ ) {
+        	for( int j=0 ; j < locations ; j++ ) {
+        		this.state[i][j] = agentAllocationFunction.apply(i, j);
+        	}    		
+    	}
+	}
+
+	public int get(int agent, int location) {
     	return this.state[agent][location];
     }
     

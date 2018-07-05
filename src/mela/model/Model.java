@@ -4,7 +4,9 @@
 package mela.model;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import mela.simulator.Transition;
 
@@ -17,7 +19,7 @@ public class Model {
 	private AgentManager agentManager;
 	private LocationManager locationManager;
 	private ParamManager paramManager;	
-	private int[][] initMatrix;
+	private BiFunction<Integer,Integer,Integer> agentAllocationFunction;
 	
 	public Model(){
 		this.agentManager = new AgentManager();
@@ -25,29 +27,27 @@ public class Model {
 		this.paramManager = new ParamManager();
 	}
 
+	
 	public State getInitialState() {
-		int namesSize = agentManager.AgentNames.size();
-		int allLocSize = locationManager.getAllLoc().size();
-		initMatrix = new int[namesSize][allLocSize];
-		State initState = new State(namesSize, allLocSize, initMatrix);
+		int namesSize = agentManager.size();
+		int allLocSize = locationManager.size();
+		State initState = new State(namesSize, allLocSize, agentAllocationFunction);
 		// TODO initMatrix is initialised during the parsing of the model
 		return initState;
 	}
 
-	public ArrayList<Transition> getTransitions(State current) {
-//		ArrayList<Transition> Transitions = new ArrayList<Transition>();			    		
-//		for (int agentIndex = 0; agentIndex < GlobalManager.getAgentManager().Agents.size(); agentIndex++) {								
-//		for (int locationIndex = 0; locationIndex < GlobalManager.getLocationManager().AllLoc.size(); locationIndex++) {
-//			if (current.get(agentIndex, locationIndex) != 0){
-//				ArrayList<Transition> listTransitions = new ArrayList<Transition>();
-//				for (Rule rule : GlobalManager.getAgentManager().Agents.get(agentIndex).getRuleList()) {				
-//			    listTransitions = rule.BuildActionStep(GlobalManager.getAgentManager(), GlobalManager.getLocationManager(), locationIndex);
-//			    for (int i=0; i < listTransitions.size(); i++){
-//			    	Transitions.add(listTransitions.get(i));							
-//				}
-//			    listTransitions.clear();
-//			    }}}}
-		return null;
+	public List<Transition> getTransitions(State current) {
+		
+		LinkedList<Transition> toReturn = new LinkedList<>();
+		for ( int l=0 ; l<locationManager.size() ; l++ ) {
+			for( int a=0 ; a<agentManager.size() ; a++ ) {
+				if (current.get(a, l) != 0) {
+					toReturn.addAll(agentManager.apply(a,l,current,locationManager));
+				}
+			}
+		}
+		
+		return toReturn;
 	}		
 
 

@@ -1,15 +1,14 @@
 package mela.model;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import mela.simulator.Transition;
 
 @FunctionalInterface
 public interface Rule {
 	
-	public ArrayList<Transition> BuildActionStep(AgentManager am, LocationManager lm, int locationIndex);
+	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager);
 		
-
 }
 
 

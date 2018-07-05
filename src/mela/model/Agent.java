@@ -4,8 +4,11 @@
 package mela.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 
 import mela.model.Actions.Action;
+import mela.simulator.Transition;
 
 /**
  * @author ludovicaluisavissat
@@ -13,35 +16,33 @@ import mela.model.Actions.Action;
  */
 public class Agent {
 	
-	int index;
-	ArrayList<Action> actionList = new ArrayList<Action>();
-	ArrayList<Rule> ruleList = new ArrayList<Rule>();
-
+	private final String name;
+	private final int index;
+	private final LinkedList<Rule> ruleList = new LinkedList<Rule>();
 	
-	public Agent() {
+	public Agent(int index, String name) {
 		this.index = index;
-		GlobalManager.getAgentManager().addAgent(this);
-		//TODO sistemare: quando si fa il parsing dobbiamo aggiungere il nome dell'agente nell'AgentManager
+		this.name = name;
 	}
 	
 	public int getIndex(){
 		return index;
 	}
 	
-	public void addAction(Action a){
-		actionList.add(a);
-	}
-	
-	public ArrayList<Action> getActionList() {
-		return this.actionList;
-	}
-	
 	public void addRule(Rule r){
 		ruleList.add(r);
 	}
 	
-	public ArrayList<Rule> getRuleList() {
+	public LinkedList<Rule> getRuleList() {
 		return this.ruleList;
+	}
+
+	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager) {
+		LinkedList<Transition> toReturn = new LinkedList<>();
+		for (Rule r : ruleList) {
+			toReturn.addAll(r.apply(l,current,locationManager));
+		}
+		return toReturn;
 	}
 
 }

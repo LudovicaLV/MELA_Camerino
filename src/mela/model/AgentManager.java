@@ -4,10 +4,13 @@
 package mela.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 import mela.model.Actions.Action;
 import mela.model.Actions.PassAction;
+import mela.simulator.Transition;
 
 /**
  * @author ludovicaluisavissat
@@ -15,35 +18,28 @@ import mela.model.Actions.PassAction;
  */
 public class AgentManager {
 	
-	public ArrayList<Agent> Agents = new ArrayList<>(); 
-	public ArrayList<String> AgentNames = new ArrayList<>(); 
-	
-    //name of the action -> index of passive agent
-    public static HashMap<String, Integer> PassiveAgentIndex = new HashMap<>();	   
-    //name of the action -> probability
-    public static HashMap<String, Double> Probability = new HashMap<>();
+	public ArrayList<Agent> agents = new ArrayList<>(); 
+	public HashMap<String,Agent> directory = new HashMap<>();
 
-	public ArrayList<String> getAgentsNames() {
-		return AgentNames;
+	public Set<String> getAgentsNames() {
+		return directory.keySet();
 	}
     
-    public void addAgent(Agent a) {
-    	Agents.add(a);
-    }
-    
-	 public void addAgentName(String Name){
-		AgentNames.add(Name);
+    public Agent addAgent(String name) {
+    	if (directory.containsKey(name)) {
+    		throw new IllegalArgumentException("Duplicated agent name!");
+    	}
+    	Agent agent = new Agent( agents.size(), name);
+    	directory.put(name, agent);
+    	return agent;
+    }    
+
+	public int size() {
+		return agents.size();
 	}
-	  
-	 public static void DefineHashMap(){
-			//passive action hashmap (index of the agents, probability)
-			for (Agent a: GlobalManager.getAgentManager().Agents) {
-				for (Action ac : a.getActionList()){
-			        if (ac.getType() == 3){	
-						PassAction passac = (PassAction) ac;
-						PassiveAgentIndex.put(ac.getName(), a.index);
-						Probability.put(ac.getName(), passac.getInfProb());
-			}}}
-		}
+
+	public Collection<? extends Transition> apply(int a, int l, State current, LocationManager locationManager) {
+		return agents.get(a).apply(l,current,locationManager);
+	}
 
 }
