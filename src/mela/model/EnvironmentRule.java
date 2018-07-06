@@ -24,8 +24,6 @@ public class EnvironmentRule implements Rule {
 	private final Predicate<Integer> environmentSet;
 	private final double effectProb;
 
-	
-
 
 	public EnvironmentRule(String info, int agentIndex, AgentStep step, double rate,
 			Predicate<Integer> environmentSet, double effectProb) {

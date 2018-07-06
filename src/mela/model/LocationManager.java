@@ -214,74 +214,12 @@ public class LocationManager {
 		lm.buildDistanceMatrix();
 		return lm;
 	}
-
 	
-//	public static LocationManager buildGridTwo(int lengthX, int lengthY, boolean isPeriodic) {
-//		LocationManager lm = new LocationManager();
-//		int totalNumLoc = lengthX * lengthY;
-//		Location[] locations = new Location[totalNumLoc];
-//		//createLocation
-//		for( int x=0 ; x<lengthX ; x++ ) {
-//			for( int y=0 ; y<lengthX ; y++ ) {
-//            int indexLoc = x * lengthX + y; 
-//			locations[indexLoc] = lm.createLocation(x+","+y);
-//			}
-//		}
-//		//build Adjacency map (not the external part!)
-//		for( int x=1 ; x<lengthX-1 ; x++ ) {
-//			for( int y=1 ; y<lengthY-1 ; y++ ) {
-//				int indexLoc = x * lengthY + y;
-//				int locN = x * lengthY + y + 1;
-//				int locS = x * lengthY + y - 1;
-//				int locE = (x+1) * lengthY + y;
-//				int locW = (x-1) * lengthY + y;
-//				lm.addEdge(locations[indexLoc], 1, locations[locN]);
-//				lm.addEdge(locations[indexLoc], 1, locations[locS]);
-//				lm.addEdge(locations[indexLoc], 1, locations[locE]);
-//				lm.addEdge(locations[indexLoc], 1, locations[locW]);					
-//			}			
-//		}
-//		
-//		//adjacency "column" 0
-//		for( int y=0 ; y<lengthY-2 ; y++ ) {
-//			lm.addEdge(locations[y], 1, locations[y+1]);
-//		}		
-//		//adjacency last "column"
-//		for( int y=0 ; y<lengthY-2 ; y++ ) {
-//			int index1 = (lengthX-1)*lengthY + y;
-//			int index2 = index1 + 1;
-//			lm.addEdge(locations[index1], 1, locations[index2]);
-//		}		
-//		//adjacency "row" 0
-//		for( int x=0 ; x<lengthX-2 ; x++ ) {
-//			int index1 = x* lengthX;
-//			int index2 = (x+1) * lengthX;
-//			lm.addEdge(locations[index1], 1, locations[index2]);
-//		}		
-//		//adjacency last "row" 
-//		for( int x=0 ; x<lengthX-2 ; x++ ) {
-//			int index1 = x* (lengthX) + lengthY;
-//			int index2 = (x+1)* (lengthX) + lengthY;
-//			lm.addEdge(locations[index1], 1, locations[index2]);
-//		}
-//		
-//		if (isPeriodic) {
-//			//left-right
-//			for( int y=0 ; y<lengthY ; y++ ) {
-//				int leftLocIndex = y;
-//				int rightLocIndex =  (lengthX-1)*lengthX + y;		
-//				lm.addEdge(locations[leftLocIndex], 1, locations[rightLocIndex]);
-//			}
-//			//up-down
-//			for( int x=0 ; x<lengthX ; x++ ) {
-//				int downLocIndex = x * lengthX;
-//				int upLocIndex = x*lengthX + (lengthY -1); 
-//				lm.addEdge(locations[downLocIndex], 1, locations[upLocIndex]);
-//			}
-//		}
-//		lm.buildDistanceMatrix();
-//		return lm;
-//	}
+	public static LocationManager buildGraph(){
+		LocationManager lm = new LocationManager();
+		//TODO build here!
+		return lm;
+	}
 
 
 	public static String locationName(int ... args) {
