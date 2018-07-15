@@ -77,7 +77,6 @@ IDENTIFIERS
 
 <DEFAULT> TOKEN : { <VERTICES : "L" > }
 <DEFAULT> TOKEN : { <EDGES : "E" > }
-<DEFAULT> TOKEN : { <WEIGHTS : "w" > }
 
 <DEFAULT> TOKEN : { <KEYWORD_GRAPH : "Graph" > }
 <DEFAULT> TOKEN : { <KEYWORD_ONED : "OneD" > }
@@ -141,6 +140,10 @@ TOKEN : { <#PARAM_SYMBOL : [".", "+", "-", "*", "/", "%", "^" ]> }
 GRAMMAR RULES
 ***********************************************/
 
+/*********
+MODEL STRUCTURE
+*********/
+
 void Input() throws NumberFormatException, RuntimeException, ParseException :
 {
     Token space;    
@@ -167,6 +170,105 @@ void Input() throws NumberFormatException, RuntimeException, ParseException :
     <EOF>
 }
 
+/*********
+SPACE
+*********/
+
+Token SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
+{Token spaceKey=null;}
+{   
+    [   
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_GRAPH >
+        { setGraph();}
+        |
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_ONED >
+        {setOneD();}
+        |
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_TWOD >
+        {setTwoD();}
+        |
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_THREED >
+        {setThreeD();}
+    ]
+    {
+      return spaceKey;
+    }   
+}
+
+
+void setGraph()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token v, v1, e, e1;
+}
+{   < VERTICES >
+    < ASSIGN >
+    < LBRAC >
+    v = <INT> 
+    (
+       <COMMA>
+       v1 = <INT>
+    )*
+    < RBRAC >
+    < EOL >
+    < EDGES >
+    <ASSIGN>
+    <LBRAC>
+     <LBRAC>
+     e = <INT>
+     <COMMA>
+     e1 = <INT>
+     <RBRAC>
+     ( 
+       <COMMA>
+       <LBRAC>
+       e = <INT>
+       <COMMA>
+       e1 = <INT>)*
+     <RBRAC>
+     < EOL >    
+}
+
+void setOneD()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token x;
+}
+{   <LR>
+    x = <INT>
+   <RR>
+}
+
+void setTwoD()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token x, y;
+}
+{   <LR>
+    x = <INT>
+    < COMMA >
+    y = < INT >
+   <RR>
+}
+
+void setThreeD()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token x, y, z;
+}
+{   <LR>
+    x = <INT>
+    < COMMA >
+    y = < INT >
+    < COMMA >
+    z = < INT >
+   <RR>
+}
+
+/*********
+PARAMETERS
+*********/
+
 void Param() throws NumberFormatException, RuntimeException, ParseException :
 {
     Token t1,t2;    
@@ -175,9 +277,12 @@ void Param() throws NumberFormatException, RuntimeException, ParseException :
     t1 = <IDENTIFIER>
     <ASSIGN>
     t2 = <DOUBLE>
-    <EOL>
-          
+    <EOL>        
 }
+
+/*********
+AGENTS
+*********/
 
 void Agent() throws NumberFormatException, RuntimeException, ParseException :
 {
@@ -197,139 +302,6 @@ void Agent() throws NumberFormatException, RuntimeException, ParseException :
         Action(agent) 
     )* 
     <EOL>
-}
-
-
-void EnvAgent() throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token t;
-    Agent agent;
-}
-{
-    t = <IDENTIFIER>
-    <DEFINE>
-    EnvAction(agent) 
-    (
-        <PLUS> 
-        EnvAction(agent) 
-    )* 
-    <EOL>
-}
-
-
-void Env() throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token t;
-    Env agent;
-}
-{
-    t = <IDENTIFIER>
-    <DEFINE>
-    EnvAction(agent) 
-    (
-        <PLUS> 
-        EnvAction(agent) 
-    )* 
-    <EOL>
-}
-
-
-Token SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
-{Token spaceKey=null;}
-{   
-    [   
-        LOOKAHEAD(2)
-        spaceKey = < KEYWORD_GRAPH >
-        { setGraph();}
-        |
-        LOOKAHEAD(2)
-        spaceKey = <  KEYWORD_ONED >
-        {setOneD();}
-        |
-        LOOKAHEAD(2)
-        spaceKey = <  KEYWORD_TWOD >
-        {setTwoD();}
-        |
-        LOOKAHEAD(2)
-        spaceKey = <  KEYWORD_THREED >
-        {setThreeD();}
-    ]
-    {
-      return spaceKey;
-    }   
-}
-
-
-Token InfSet() throws NumberFormatException, RuntimeException, ParseException :
-{Token set=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        set = < KEYWORD_LOC >
-        |
-        LOOKAHEAD(1)
-        set = <  KEYWORD_NEIGH >
-        |
-        LOOKAHEAD(1)
-        set = <  KEYWORD_ALL >
-    ]
-    {
-      return set;
-    }   
-}
-
-Token InfSetEnv() throws NumberFormatException, RuntimeException, ParseException :
-{Token set=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        set = < INT >
-        |
-        LOOKAHEAD(1)
-        set = <  KEYWORD_ALL >
-    ]
-    {
-      return set;
-    }   
-}
-
-
-Token MelaSymbol() throws NumberFormatException, RuntimeException, ParseException :
-{Token symbol = null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        symbol = < DOT >
-        |
-        LOOKAHEAD(1)
-        symbol = <  UP >
-        |
-        LOOKAHEAD(1)
-        symbol = <  DOWN >
-        |
-        LOOKAHEAD(1)
-        symbol = <  TRIANGLE >
-    ]
-    {
-      return symbol;
-    }
-    
-}
-
-Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException :
-{Token update=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        update = < KEYWORD_LOC >
-        |
-        LOOKAHEAD(1)
-        update = <  IDENTIFIER >
-    ]
-    { 
-    return update;
-    }
-    
 }
 
 void Action(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
@@ -363,15 +335,53 @@ void NoInfAction(Agent agent) throws NumberFormatException, RuntimeException, Pa
     <LR>
     updateloc = UpdateLoc()
      <RR>
-   (<PARALLEL>
-    update2 = <IDENTIFIER>
-    <LR>
-    updateloc2 = UpdateLoc()
-    <RR>)?
+   (
+      <PARALLEL>
+      update2 = <IDENTIFIER>
+      <LR>
+      updateloc2 = UpdateLoc()
+      <RR>)?
   }    
 
-    
-    
+
+Token MelaSymbol() throws NumberFormatException, RuntimeException, ParseException :
+{Token symbol = null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        symbol = < DOT >
+        |
+        LOOKAHEAD(1)
+        symbol = <  UP >
+        |
+        LOOKAHEAD(1)
+        symbol = <  DOWN >
+        |
+        LOOKAHEAD(1)
+        symbol = <  TRIANGLE >
+    ]
+    {
+      return symbol;
+    }   
+}  
+
+
+Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException :
+{Token update=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        update = < KEYWORD_LOC >
+        |
+        LOOKAHEAD(1)
+        update = <  IDENTIFIER >
+    ]
+    { 
+    return update;
+    }   
+}
+
+
 void InfAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException:
 {
     Token infset=null, name = null, rate = null, symbolInf = null, update=null, updatelocInf=null, update2=null, updatelocInf2=null, rangeNeigh = null; 
@@ -400,6 +410,27 @@ void InfAction(Agent agent) throws NumberFormatException, RuntimeException, Pars
     <LR>
     updatelocInf2 = UpdateLoc()
     <RR>)?
+}
+
+
+Token InfSet() throws NumberFormatException, RuntimeException, ParseException :
+{Token set=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        set = < KEYWORD_LOC >
+        |
+        LOOKAHEAD(1)
+        set = <  KEYWORD_NEIGH >
+        |
+        LOOKAHEAD(1)
+        set = <  KEYWORD_ALL >
+    ]
+    {
+      return set;
+    }   
+}
+
 
 void PassAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
 {
@@ -423,9 +454,24 @@ void PassAction(Agent agent) throws NumberFormatException, RuntimeException, Par
     <LR>
     updatelocInf2 = UpdateLoc()
     <RR>)?
-   }    
-    
-    
+   }  
+
+
+void EnvAgent() throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token t;
+    Agent agent;
+}
+{
+    t = <IDENTIFIER>
+    <DEFINE>
+    EnvAction(agent) 
+    (
+        <PLUS> 
+        EnvAction(agent) 
+    )* 
+    <EOL>
+} 
     
 void EnvAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
 {
@@ -437,7 +483,7 @@ void EnvAction(Agent agent) throws NumberFormatException, RuntimeException, Pars
     <RANG>
     <LBRAC>
     
-    //here we need to distinguish between list and all! probably we need another method
+    /* here we need to distinguish between list and all! probably we need another method with lookahead */
     
     (<LR>
     {check = 1;})?
@@ -479,6 +525,28 @@ void EnvAction(Agent agent) throws NumberFormatException, RuntimeException, Pars
     update = <IDENTIFIER>
   }
 
+
+Token InfSetEnv() throws NumberFormatException, RuntimeException, ParseException :
+{Token set=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        set = < INT >
+        |
+        LOOKAHEAD(1)
+        set = <  KEYWORD_ALL >
+    ]
+    {
+      return set;
+    }   
+}
+
+
+/*********
+INITIAL CONDITIONS
+*********/
+
+
 void Init() throws NumberFormatException, RuntimeException, ParseException :
 {  
 }
@@ -516,68 +584,3 @@ void InitAgent() throws NumberFormatException, RuntimeException, ParseException 
 }
 }
 
-void setGraph()throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token v, v1, e, e1, w, w1;
-}
-{   < VERTICES >
-    < ASSIGN >
-    < LBRAC >
-    v = <INT> 
-    (
-       <COMMA>
-       v1 = <INT>
-    )*
-    < RBRAC >
-    < EOL >
-    < EDGES >
-    <ASSIGN>
-    <LBRAC>
-     <LBRAC>
-     e = <INT>
-     <COMMA>
-     e1 = <INT>
-     <RBRAC>
-     (
-       <COMMA>
-     <LBRAC>
-     e = <INT>
-      <COMMA>
-      e1 = <INT>)*
-     <RBRAC>
-     < EOL >
-     
-}
-
-void setOneD()throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token x;
-}
-{   <LR>
-    x = <INT>
-   <RR>
-}
-
-void setTwoD()throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token x, y;
-}
-{   <LR>
-    x = <INT>
-    < COMMA >
-    y = < INT >
-   <RR>
-}
-
-void setThreeD()throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token x, y, z;
-}
-{   <LR>
-    x = <INT>
-    < COMMA >
-    y = < INT >
-    < COMMA >
-    z = < INT >
-   <RR>
-}
