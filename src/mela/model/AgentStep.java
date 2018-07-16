@@ -11,8 +11,7 @@ import java.util.List;
  */
 public class AgentStep {
 	
-	private final int agentIndex;
-	
+	private final int agentIndex;	
 	private final Update update;
 
 	public AgentStep(int agentIndex, Update update) {

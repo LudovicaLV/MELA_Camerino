@@ -1,4 +1,4 @@
-package mela.model.Actions;
+package mela.model.actions;
 
 public class PropensityFunction {
 	private String name;

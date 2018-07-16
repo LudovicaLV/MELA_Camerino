@@ -10,6 +10,7 @@ import java.util.function.BiFunction;
  * @author ludovicaluisavissat
  *
  */
+
 public class State {   
  
 	private final int agents;
@@ -20,8 +21,13 @@ public class State {
     	this.agents = agents;
     	this.locations = locations;
     	this.state = state;
-    }
-    
+    }   
+
+    /**
+     * @param agents: number of agents
+     * @param locations: number of locations
+     * @param agentAllocationFunction: initial state of the system
+     */
     public State(int agents, int locations, BiFunction<Integer, Integer, Integer> agentAllocationFunction) {
     	this.agents = agents;
     	this.locations = locations;
@@ -33,10 +39,19 @@ public class State {
     	}
 	}
 
+	/**
+	 * @param agent: index agent
+	 * @param location: index location
+	 * @return: number of the required agent in the given location
+	 */
 	public int get(int agent, int location) {
     	return this.state[agent][location];
     }
     
+    /**
+     * @param updates: lit of agents' variation
+     * @return new state of the system, after the variation have been applied
+     */
     public State apply( List<AgentVariation> updates ) {
     	int[][] newState = copyState();
     	for (AgentVariation av : updates) {
@@ -45,6 +60,9 @@ public class State {
     	return new State(this.agents,this.locations,newState);
     }
 
+	/**
+	 * @return copy of the current state of the system
+	 */
 	private int[][] copyState() {
 		int[][] newState = new int[agents][locations];
 		for( int i=0 ; i<agents ; i++ ) {

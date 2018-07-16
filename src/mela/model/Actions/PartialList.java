@@ -1,4 +1,4 @@
-package mela.model.Actions;
+package mela.model.actions;
 
 import java.util.ArrayList;
 

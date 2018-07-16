@@ -1,4 +1,4 @@
-package mela.model.Actions;
+package mela.model.actions;
 
 public class PassAction implements Action {
 	private String name;

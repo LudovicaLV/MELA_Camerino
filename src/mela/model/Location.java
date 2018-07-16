@@ -26,6 +26,7 @@ public class Location {
 		return locationIndex;
 	}
 
+	//not used at the moment
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -45,12 +46,11 @@ public class Location {
 		return true;
 	}
 
+	//to use in ActionInfo
 	@Override
 	public String toString() {
 		return "[name=" + name + ", locationIndex=" + locationIndex + "]";
 	}
    
-   
-   //FIXME: this class might not be useful at all!
 }
    

@@ -12,7 +12,12 @@ import java.util.HashMap;
 public class ParamManager {
 	
 	public HashMap<String, Double> paramMap = new HashMap<String, Double>();
-
+	
+	/**
+	 * @param name: name parameter
+	 * @param value: value parameter
+	 * add a parameter and its value to the hashmap
+	 */
 	public void addParam(String name, double value) {
 		if(ParamExist(name)) {
 			System.err.println("The param " + name + " already exists!");
@@ -21,6 +26,10 @@ public class ParamManager {
 		}
 	}
 	
+	/**
+	 * @param name: name parameter
+	 * @return: checks if the parameter exists already (through the name)
+	 */
 	public boolean ParamExist(String name) {
 		if(paramMap.get(name) != null) {
 			return true;

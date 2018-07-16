@@ -20,9 +20,13 @@ public class MovementUpdate implements Update {
 	
 	public MovementUpdate( int src ) {
 		this.src = src;
-	}
-	
+	}	
 
+	/**
+	 * The updateItems which are built have a probability associated which is calculated as 1/n, where n is the number of neighbouring locations
+	 * The agent state (src) is the same, in this case the index of the location is the one that changes
+	 *
+	 */
 	@Override
 	public List<UpdateItem> computeUpdateItems(LocationManager locationManager, int location) {
 		LinkedList<UpdateItem> toReturn = new LinkedList<>();

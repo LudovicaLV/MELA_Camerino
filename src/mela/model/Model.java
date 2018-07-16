@@ -14,12 +14,13 @@ import mela.simulator.Transition;
  * @author ludovicaluisavissat
  *
  */
+
 public class Model {
-	
+		
 	private AgentManager agentManager;
 	private LocationManager locationManager;
 	private ParamManager paramManager;	
-	private BiFunction<Integer,Integer,Integer> agentAllocationFunction;
+	private BiFunction<Integer,Integer,Integer> agentAllAgentLocationFunction;
 	
 	public Model(){
 		this.agentManager = new AgentManager();
@@ -28,16 +29,23 @@ public class Model {
 	}
 
 	
+	/**
+	 * @return initial state of the system: number of agents for each different type in each different location
+	 */
 	public State getInitialState() {
 		int namesSize = agentManager.size();
 		int allLocSize = locationManager.size();
-		State initState = new State(namesSize, allLocSize, agentAllocationFunction);
+		State initState = new State(namesSize, allLocSize, agentAllAgentLocationFunction);
 		// TODO initMatrix is initialised during the parsing of the model
 		return initState;
 	}
 
-	public List<Transition> getTransitions(State current) {
-		
+	
+	/**
+	 * @param current: current state of the system
+	 * @return return the list of possible transitions given the current state and calling the agentManager and locationManager
+	 */
+	public List<Transition> getTransitions(State current) {		
 		LinkedList<Transition> toReturn = new LinkedList<>();
 		for ( int l=0 ; l<locationManager.size() ; l++ ) {
 			for( int a=0 ; a<agentManager.size() ; a++ ) {
@@ -46,7 +54,6 @@ public class Model {
 				}
 			}
 		}
-		
 		return toReturn;
 	}		
 

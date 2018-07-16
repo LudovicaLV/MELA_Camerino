@@ -12,8 +12,7 @@ import java.util.List;
  */
 public class UpdateItem {
 
-	private final double prob;
-	
+	private final double prob;	
 	private final LinkedList<AgentVariation> variations;
 
 	public UpdateItem(double prob, LinkedList<AgentVariation> variations) {

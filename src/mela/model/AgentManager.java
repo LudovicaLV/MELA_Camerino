@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
-import mela.model.Actions.Action;
-import mela.model.Actions.PassAction;
+import mela.model.actions.Action;
+import mela.model.actions.PassAction;
 import mela.simulator.Transition;
 
 /**
@@ -20,6 +20,7 @@ public class AgentManager {
 	
 	public ArrayList<Agent> agents = new ArrayList<>(); 
 	public HashMap<String,Agent> directory = new HashMap<>();
+	//directory used to verify there are not duplicates in the agent names
 
 	public Set<String> getAgentsNames() {
 		return directory.keySet();
@@ -38,6 +39,13 @@ public class AgentManager {
 		return agents.size();
 	}
 
+	/**
+	 * @param a: index agent
+	 * @param l: index location
+	 * @param current: current state of the system
+	 * @param locationManager: spatial structure
+	 * @return:  transition enabled by the agent in the location
+	 */
 	public Collection<? extends Transition> apply(int a, int l, State current, LocationManager locationManager) {
 		return agents.get(a).apply(l,current,locationManager);
 	}

@@ -14,6 +14,7 @@ import mela.simulator.Transition;
  * @author ludovicaluisavissat
  *
  */
+
 public class NoInfluenceRule implements Rule {
 	
 	private final String info;
@@ -30,7 +31,11 @@ public class NoInfluenceRule implements Rule {
 		this.rate = rate;
 	}	
 
-	@Override
+	@Override	
+	/**
+	 * this method creates the list of enabled transitions given the no-influence action 
+	 * the use of updateItem and probability in this case is used for movement actions
+	 */
 	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager) {
 		LinkedList<Transition> toReturn = new LinkedList<>();
 		//TODO: Built here the appropriate  ActionInfo
@@ -41,6 +46,8 @@ public class NoInfluenceRule implements Rule {
 		}
 		return toReturn;
 	}
+	
+	
 
 
 }

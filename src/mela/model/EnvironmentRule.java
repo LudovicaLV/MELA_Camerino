@@ -36,9 +36,6 @@ public class EnvironmentRule implements Rule {
 		this.effectProb = effectProb;
 	}
 
-
-
-
 	@Override
 	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager) {
 		LinkedList<Transition> toReturn = new LinkedList<>();

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import mela.model.Actions.Action;
+import mela.model.actions.Action;
 import mela.simulator.Transition;
 
 /**
@@ -37,6 +37,13 @@ public class Agent {
 		return this.ruleList;
 	}
 
+	
+	/**
+	 * @param l: current agent location
+	 * @param current: current state of the system
+	 * @param locationManager: spatial structure
+	 * @return: list of enabled transitions
+	 */
 	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager) {
 		LinkedList<Transition> toReturn = new LinkedList<>();
 		for (Rule r : ruleList) {

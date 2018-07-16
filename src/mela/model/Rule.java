@@ -17,11 +17,12 @@ public interface Rule {
 	/**
 	 * Return the list of transitions enabled when the rule is applied.
 	 * 
-	 * @param l	The location where the rule is applied
-	 * @param current current state
-	 * @param locationManager Location Manager
+	 * @param l: the location where the rule is applied
+	 * @param current: current state
+	 * @param locationManager: Location Manager
 	 * @return
 	 */
+	
 	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager);
 	
 }
