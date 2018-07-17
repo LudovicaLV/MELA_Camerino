@@ -15,8 +15,17 @@ import mela.simulator.Transition;
  * @author ludovicaluisavissat
  *
  */
+
 public class InfluenceRule implements Rule {
 	
+	/**
+	 * info: information for metadata
+	 * rate: rate of the action
+	 * passiveProb: probability of the action to be effective
+	 * active: index of agent performing the action, its update
+	 * passive: index of passive agent, its update
+	 * influenceFunction: index of locations where the influence is felt
+	 */
 	private final String info;
 	private final double rate;
 	private final double passiveProb;
@@ -24,7 +33,6 @@ public class InfluenceRule implements Rule {
 	private final AgentStep passive;
 	private final BiFunction<Integer,LocationManager,List<Integer>> influenceFunction;
 
-	
 	public InfluenceRule(String info, 
 			double rate,
 			AgentStep active , 
@@ -39,7 +47,12 @@ public class InfluenceRule implements Rule {
 		this.passiveProb = passiveProb;
 		this.influenceFunction = influenceFunction;
 	}	
-
+	
+	/**
+	 * build the transitions with the updates for both the active and the passive, checking the presence of the passive agents
+	 * it uses the method addTransitions to add both the updates
+	 * it builds the two possible transitions, the effective (probability p) and not effective (probability 1-p)
+	 */	
 	@Override
 	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager) {
 		LinkedList<Transition> toReturn = new LinkedList<>();
@@ -57,6 +70,12 @@ public class InfluenceRule implements Rule {
 		return toReturn;
 	}
 
+	/**
+	 * @param toReturn: list of enabled transitions
+	 * @param rate: rate of the action
+	 * @param activeUpdateItems: update of the active agent
+	 * @param passiveUpdateItems: update of the passive agent
+	 */
 	private void addTransitions(LinkedList<Transition> toReturn, double rate, List<UpdateItem> activeUpdateItems,
 			List<UpdateItem> passiveUpdateItems) {
 		for (UpdateItem passiveItem : passiveUpdateItems) {

@@ -1,0 +1,212 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(MELArules)
+
+package ParserRules;
+
+public class MELArules {
+       
+    public MELArules() {
+        this(new java.io.StringReader(""));
+    }
+
+    public void parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
+        this.ReInit(new java.io.StringReader(modelDef));
+        this.Input();
+    }
+
+    public void parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+        try { this.ReInit(new java.io.FileReader(filename)); }
+        catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
+        this.Input();
+    }
+
+}
+
+PARSER_END(MELArules)
+
+/***************************************************************
+SKIP
+***************************************************************/
+
+<DEFAULT,RESET,ID> SKIP :
+{
+  " "
+  | "\t"
+  | "\n"
+  | "\r"
+
+  | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+  | <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+
+/***************************************************************
+TOKENS
+***************************************************************/
+
+ /* LITERALS */
+TOKEN : { < #INTEGER: ("-")? ["0"-"9"] (["0"-"9"])* > }
+TOKEN : { < #FLOAT:
+                            ("-")?  (["0"-"9"])+ "." (["0"-"9"])*
+                            | ("-")?  "." (["0"-"9"])+
+                    > }
+TOKEN : { < #FLOAT_SCIENTIFIC:
+                             ("-")? (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)
+                            |  ("-")? "." (["0"-"9"])+ (<EXPONENT>)
+                            |  ("-")? (["0"-"9"])+ <EXPONENT>
+                    > }
+TOKEN : { < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ > }
+TOKEN: { < #LETTER: ["A"-"Z","a"-"z"] > }
+TOKEN: { < #DIGIT: ["0"-"9"] > }
+
+TOKEN: { < #WORD: (["A"-"Z","a"-"z"])+ > }
+
+	
+/*
+IDENTIFIERS
+*/
+
+<DEFAULT> TOKEN : { <KEYWORD_RUN : "#Runs" > }
+
+<DEFAULT> TOKEN : { <KEYWORD_TIME : "#Time" > }
+<DEFAULT> TOKEN : { <KEYWORD_POPULATION : "#Population" > }
+<DEFAULT> TOKEN : { <KEYWORD_POPLOC : "#Pop_Loc" > }
+<DEFAULT> TOKEN : { <KEYWORD_ACTION : "#ActionCount" > }
+<DEFAULT> TOKEN : { <KEYWORD_STEP : "#Steps" > }
+
+<DEFAULT> TOKEN : { <KEYWORD_BOUNDARY : "#Boundary" > }
+<DEFAULT> TOKEN : { <KEYWORD_PERIODIC : "Periodic" > }
+<DEFAULT> TOKEN : { <KEYWORD_BOUNCING : "Bouncing" > }
+
+<DEFAULT> TOKEN : { <KEYWORD_TOTAL : "#Total population" > }
+<DEFAULT> TOKEN : { <KEYWORD_COUNT : "#Action" > }
+
+<DEFAULT> TOKEN : { <SEMICOLON : ":" > }
+<DEFAULT> TOKEN : { <ASSIGN : "=" >}
+<DEFAULT> TOKEN : { <COMMA : "," >}
+
+<DEFAULT> TOKEN : { <LR : "(" > }
+<DEFAULT> TOKEN : { <RR : ")" > }
+
+<DEFAULT> TOKEN : {<INT : <INTEGER> > }
+<DEFAULT> TOKEN : {<DOUBLE : <FLOAT>|<FLOAT_SCIENTIFIC> > }
+<DEFAULT> TOKEN: { <IDENTIFIER: <LETTER>(<LETTER>|<DIGIT>|"_"|"$"|"#")*> }
+
+
+<MATH> TOKEN : { <MATH_EXPR : (<DIGIT> | <SYMBOL> | <SPACE> | <M_AND> | <M_OR> | <M_LINER> | <M_LINEN>)+ > : DEFAULT }
+<MATH> TOKEN : { <#SPACE : " " | "\t"> }
+<MATH> TOKEN : { <#M_AND : "&&" > }
+<MATH> TOKEN : { <#M_OR : "|"> }
+<MATH> TOKEN : { <#M_LINER : "\r"> }
+<MATH> TOKEN : { <#M_LINEN : "\n"> }
+
+TOKEN : { <#SYMBOL : [".", "=", "+", "-", "*", "/", "%", "^", "(", ")", "!", "<", ">", ",", "_", "[","]" ]> }
+TOKEN : { <#PARAM_SYMBOL : [".", "+", "-", "*", "/", "%", "^" ]> }
+
+
+/***********************************************
+GRAMMAR RULES
+***********************************************/
+
+void Input() throws NumberFormatException, RuntimeException, ParseException :
+{
+
+}
+{   
+    <KEYWORD_RUN>
+    <ASSIGN>
+    runs = <INT>
+
+    time_boundary = BoundChoice()  
+    
+    (<KEYWORD_BOUNDARY>
+    <SEMICOLON>
+    boundary = BoundaryOptions())?
+    
+//    {if (boundary == null){
+//    set "periodic" by default}
+//    } 
+      
+    (
+    <KEYWORD_TOTAL>
+    <ASSIGN>
+    population = <IDENTIFIER>
+    (<COMMA>
+    population2 = <IDENTIFIER>)*)?
+    
+    (
+    <KEYWORD_ACTION>
+    <ASSIGN>
+    action = <IDENTIFIER>
+    (<COMMA>
+    action2 = <IDENTIFIER>)*)?
+    
+    <EOF>
+}
+
+Token BoundChoice() throws NumberFormatException, RuntimeException, ParseException :
+{Token bound=null, timeTotal=null, nameAgent, actionName=null, actionValue=null, x=null,y=null,z=null;}
+{   
+    [   
+        LOOKAHEAD(2)
+        bound = < KEYWORD_TIME >
+        <ASSIGN>
+        timeTotal = <DOUBLE>
+        |
+        LOOKAHEAD(2)
+        bound = <  KEYWORD_POPULATION >
+        <SEMICOLON>
+        nameAgent = <IDENTIFIER>
+        |
+        LOOKAHEAD(2)
+        bound = <  KEYWORD_POPLOC >
+        <SEMICOLON>
+        nameAgent = <IDENTIFIER>
+        <LR>     
+        x = <INT>
+        (
+        <COMMA>
+        y = <INT>
+        (
+        <COMMA>
+        z = <INT>
+        )?
+        )?
+        <RR>          
+        |   
+        LOOKAHEAD(2)
+        bound = <  KEYWORD_ACTION >
+        <SEMICOLON>
+        actionName = <IDENTIFIER>
+        <ASSIGN>
+        actionValue = <INT>
+        |   
+        LOOKAHEAD(2)
+        bound = <  KEYWORD_STEP >
+        <ASSIGN>
+        actionValue = <INT>
+    ]
+    {
+      return bound;
+    }       
+    }
+    
+    
+Token BoundaryOptions() throws NumberFormatException, RuntimeException, ParseException :
+{Token name=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        name = < KEYWORD_PERIODIC >
+        |
+        LOOKAHEAD(1)
+        name = < KEYWORD_BOUNCING >
+    ]
+    {
+      return name;
+    }   
+    
+}

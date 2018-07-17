@@ -24,7 +24,14 @@ public class EnvironmentRule implements Rule {
 	private final Predicate<Integer> environmentSet;
 	private final double effectProb;
 
-
+	/**
+	 * info: information about the action, for metadata
+	 * agentIndex: index of passive agent
+	 * step: index and update for the agent
+	 * rate: rate of the action
+	 * environmentSet: to evaluate if the passive agent is in a location under the environment influence
+	 * effectProb: probability of the action to be effective
+	 */
 	public EnvironmentRule(String info, int agentIndex, AgentStep step, double rate,
 			Predicate<Integer> environmentSet, double effectProb) {
 		super();
@@ -37,6 +44,11 @@ public class EnvironmentRule implements Rule {
 	}
 
 	@Override
+	/**
+	 * this methods returns the set of enabled transitions, for passive agents which are located in the locations
+	 * influenced by the environment.
+	 * If we do not have passive agents, this method will not be called (the method getTransitions() in the model checks the presence of the agents)
+	 */
 	public Collection<? extends Transition> apply(int l, State current, LocationManager locationManager) {
 		LinkedList<Transition> toReturn = new LinkedList<>();
 		if (environmentSet.test(l)) {

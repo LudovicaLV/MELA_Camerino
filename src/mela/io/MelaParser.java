@@ -1,6 +1,3 @@
-/**
- * 
- */
 package mela.io;
 
 import java.io.File;
@@ -9,9 +6,9 @@ import mela.model.Model;
 import mela.simulator.Parameters;
 
 /**
- * @author ludovicaluisavissat
- *
- */
+* @author ludovicaluisavissat
+*
+*/
 public class MelaParser {
 
 	private static MelaParser instance;
