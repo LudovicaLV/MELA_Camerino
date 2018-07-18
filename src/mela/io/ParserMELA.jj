@@ -144,17 +144,18 @@ GRAMMAR RULES
 MODEL STRUCTURE
 *********/
 
-void Input() throws NumberFormatException, RuntimeException, ParseException :
+Model Input() throws NumberFormatException, RuntimeException, ParseException :
 {
-    Token space;    
-    boolean spaceboolean = false, agents = false, init = false;
+    Model m = new Model();    
+    LocationManager lm;
+    HashMap<String,Double> parameters = new HashMap<String,Double>();
 }
 {   <SECTION_SPACE>
 	<SEMICOLON>
-   	space = SpaceStructure()
+   	lm = SpaceStructure() { m.setLocationManager(lm); }
     <SECTION_PARAM>
     (
-      Param()
+      Param( parameters )
     )*  
 	<SECTION_AGENTS>
     (
@@ -165,7 +166,7 @@ void Input() throws NumberFormatException, RuntimeException, ParseException :
     )*
    <SECTION_INIT>
     (
-      Init()
+      BiFunction<Integer,Integer,Integer> allocation = Init() { model.setAgentAllocationFunction( allocation ); } 
     )
     <EOF>
 }
@@ -174,13 +175,13 @@ void Input() throws NumberFormatException, RuntimeException, ParseException :
 SPACE
 *********/
 
-Token SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
+LocationManager SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
 {Token spaceKey=null;}
 {   
     [   
         LOOKAHEAD(2)
-        spaceKey = < KEYWORD_GRAPH >
-        { setGraph();}
+        < KEYWORD_GRAPH >
+        lm=setGraph() { return lm; }
         |
         LOOKAHEAD(2)
         spaceKey = < KEYWORD_ONED >
@@ -200,17 +201,17 @@ Token SpaceStructure() throws NumberFormatException, RuntimeException, ParseExce
 }
 
 
-void setGraph()throws NumberFormatException, RuntimeException, ParseException :
+LocationManager setGraph()throws NumberFormatException, RuntimeException, ParseException :
 {
-    Token v, v1, e, e1;
+    LocationManager lm = new LocationManager();
 }
 {   < VERTICES >
     < ASSIGN >
     < LBRAC >
-    v = <INT> 
+    v = <INT> { lm.createLocation(v+""); }
     (
        <COMMA>
-       v1 = <INT>
+       v1 = <INT> { lm.createLocation(v+""); }
     )*
     < RBRAC >
     < EOL >
@@ -220,16 +221,16 @@ void setGraph()throws NumberFormatException, RuntimeException, ParseException :
      <LBRAC>
      e = <INT>
      <COMMA>
-     e1 = <INT>
+     e1 = <INT> { lm.addEdge(lm.getLocation(e+""),lm.getLocation(e2+"")); }
      <RBRAC>
      ( 
        <COMMA>
        <LBRAC>
        e = <INT>
        <COMMA>
-       e1 = <INT>)*
+       e1 = <INT> { lm.addEdge(lm.getLocation(e+""),lm.getLocation(e2+"")); })*
      <RBRAC>
-     < EOL >    
+     < EOL >  {  return lm; }
 }
 
 void setOneD()throws NumberFormatException, RuntimeException, ParseException :
@@ -238,7 +239,7 @@ void setOneD()throws NumberFormatException, RuntimeException, ParseException :
 }
 {   <LR>
     x = <INT>
-   <RR>
+   <RR> { return LocationManager.buildOneD( x ); }
 }
 
 void setTwoD()throws NumberFormatException, RuntimeException, ParseException :
@@ -269,15 +270,15 @@ void setThreeD()throws NumberFormatException, RuntimeException, ParseException :
 PARAMETERS
 *********/
 
-void Param() throws NumberFormatException, RuntimeException, ParseException :
+void Param( HashMap<String,Double> parameters ) throws NumberFormatException, RuntimeException, ParseException :
 {
     Token t1,t2;    
 }
 {		
     t1 = <IDENTIFIER>
     <ASSIGN>
-    t2 = <DOUBLE>
-    <EOL>        
+    t2 = <DOUBLE> 
+    <EOL> { paramters.put( t1, t2 ); }       
 }
 
 /*********
@@ -547,39 +548,50 @@ INITIAL CONDITIONS
 *********/
 
 
-void Init() throws NumberFormatException, RuntimeException, ParseException :
+BiFucntion<Integer,Integer,Integer>  Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
 {  
+	HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<>();
 }
 {  
-    InitAgent() 
+    InitAgent( allocationMap ) 
     (
         <PARALLEL> 
-        InitAgent() 
+        InitAgent( allocationMap ) 
     )*        
+    { return (x,y) -> allocationMap.getOrDefault( x , new HashMap<>() ).getOrDefault( y , 0 ); }
 }    
 
 
-void InitAgent() throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token t,x=null,y=null,z=null,n =null;
+InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMap  ) throws NumberFormatException, RuntimeException, ParseException :
+{    
+   int agentIndex;
+   int locationIndex;
+   String locationName = "";
 }
 {
     t = <IDENTIFIER>
     (
     <LR>
-    x = <INT>
+    x = <INT> { locationName += x; }
     (
        <COMMA>
-    y = <INT>
+    y = <INT> { locationName += ","+y; }
     (
        <COMMA>
-    z = <INT>
+    z = <INT> { locationName += ","+z; }
     )?
     )?    
-    <RR>
+    <RR> { locaitonIndex = lm.getLocationIndex(locationName);
     )?
     <LSQ>
     n = <INT>
-    <RSQ>
+    <RSQ> { 
+    	HashMap<Integer,Integer> internalMap = allocationMap.get( agentIndex );
+	if (internalMap==null) {
+		internalMap = new HashMap<>();
+		allocationMap.put( agentIndex , internalMap );
+	}
+	internalMap.put( locationIndex , n );
+    }
 }
 
