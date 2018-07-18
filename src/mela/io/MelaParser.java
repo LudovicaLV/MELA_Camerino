@@ -12,12 +12,7 @@ public class MELAparser implements MELAparserConstants {
     public MELAparser() {
         this(new java.io.StringReader(""));
     }
-
-    public Model parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
-        this.ReInit(new java.io.StringReader(modelDef));
-        return Input();
-    }
-
+    
         public Model parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
