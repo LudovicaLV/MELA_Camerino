@@ -36,7 +36,6 @@ public class Agent {
 	public LinkedList<Rule> getRuleList() {
 		return this.ruleList;
 	}
-
 	
 	/**
 	 * @param l: current agent location

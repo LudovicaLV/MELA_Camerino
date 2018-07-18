@@ -15,26 +15,7 @@ import java.util.Set;
  * @author ludovicaluisavissat
  *
  */
-/**
- * @author ludovicaluisavissat
- *
- */
-/**
- * @author ludovicaluisavissat
- *
- */
-/**
- * @author ludovicaluisavissat
- *
- */
-/**
- * @author ludovicaluisavissat
- *
- */
-/**
- * @author ludovicaluisavissat
- *
- */
+
 public class LocationManager {
 
 	private ArrayList<Location> locations = new ArrayList<Location>();			
