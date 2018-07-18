@@ -19,15 +19,16 @@ public class Model {
 		
 	private AgentManager agentManager;
 	private LocationManager locationManager;
-	private ParamManager paramManager;	
 	private BiFunction<Integer,Integer,Integer> agentAllAgentLocationFunction;
 	
-	public Model(){
+	
+	public void setAgentManager(AgentManager agentManager){
 		this.agentManager = new AgentManager();
-		this.locationManager = new LocationManager();
-		this.paramManager = new ParamManager();
 	}
-
+	
+	public void setLocationManager(LocationManager locationManager){
+		this.locationManager = new LocationManager();
+	}
 	
 	/**
 	 * @return initial state of the system: number of agents for each different type in each different location
@@ -57,10 +58,16 @@ public class Model {
 		return toReturn;
 	}		
 
-
-	public ParamManager getParamManager() {
-		return paramManager;
-	}
+	
+    public Agent addAgent(String name) {
+    	if (agentManager.directory.containsKey(name)) {
+    		throw new IllegalArgumentException("Duplicated agent name!");
+    	}
+    	Agent agent = new Agent(agentManager.agents.size(), name);
+    	agentManager.directory.put(name, agent);
+    	//add Agent to agents?
+    	return agent;
+    }    
 	
 	public LocationManager getLocationManager() {
 		return locationManager;

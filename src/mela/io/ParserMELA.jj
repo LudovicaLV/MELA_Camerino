@@ -4,7 +4,13 @@ options {
 
 PARSER_BEGIN(MELAparser)
 
-package ParserMELA;
+package mela.io;
+
+import java.util.HashMap;
+import java.util.function.BiFunction;
+import mela.model.LocationManager;
+import mela.model.Model;
+
 
 public class MELAparser {
        
@@ -12,15 +18,15 @@ public class MELAparser {
         this(new java.io.StringReader(""));
     }
 
-    public void parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
+    public Model parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
         this.ReInit(new java.io.StringReader(modelDef));
-        this.Input();
+        return Input();
     }
 
-    public void parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+        public Model parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
-        this.Input();
+        return Input();
     }
 
 }
@@ -157,17 +163,8 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
     (
       Param( parameters )
     )*  
-	<SECTION_AGENTS>
-    (
-	  Agent()     
-    )+
-	(<SECTION_ENV>  
-	  EnvAgent()     
-    )*
    <SECTION_INIT>
-    (
-      BiFunction<Integer,Integer,Integer> allocation = Init() { model.setAgentAllocationFunction( allocation ); } 
-    )
+   {return m; }
     <EOF>
 }
 
@@ -176,7 +173,8 @@ SPACE
 *********/
 
 LocationManager SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
-{Token spaceKey=null;}
+{Token spaceKey=null;
+ LocationManager lm = new LocationManager();}
 {   
     [   
         LOOKAHEAD(2)
@@ -196,22 +194,25 @@ LocationManager SpaceStructure() throws NumberFormatException, RuntimeException,
         {setThreeD();}
     ]
     {
-      return spaceKey;
+      return lm;
     }   
 }
 
 
-LocationManager setGraph()throws NumberFormatException, RuntimeException, ParseException :
+LocationManager setGraph() throws NumberFormatException, RuntimeException, ParseException :
 {
-    LocationManager lm = new LocationManager();
+  Token v, v1, e, e1;
+  LocationManager lm = new LocationManager();
 }
 {   < VERTICES >
     < ASSIGN >
     < LBRAC >
-    v = <INT> { lm.createLocation(v+""); }
+    v = <INT>
+    { lm.createLocation(v+""); }
     (
        <COMMA>
-       v1 = <INT> { lm.createLocation(v+""); }
+       v1 = <INT>
+    { lm.createLocation(v+""); }
     )*
     < RBRAC >
     < EOL >
@@ -221,16 +222,18 @@ LocationManager setGraph()throws NumberFormatException, RuntimeException, ParseE
      <LBRAC>
      e = <INT>
      <COMMA>
-     e1 = <INT> { lm.addEdge(lm.getLocation(e+""),lm.getLocation(e2+"")); }
+     e1 = <INT>
      <RBRAC>
      ( 
        <COMMA>
        <LBRAC>
        e = <INT>
        <COMMA>
-       e1 = <INT> { lm.addEdge(lm.getLocation(e+""),lm.getLocation(e2+"")); })*
+       e1 = <INT>
+       )*
      <RBRAC>
-     < EOL >  {  return lm; }
+     < EOL >
+     {  return lm; }
 }
 
 void setOneD()throws NumberFormatException, RuntimeException, ParseException :
@@ -239,7 +242,7 @@ void setOneD()throws NumberFormatException, RuntimeException, ParseException :
 }
 {   <LR>
     x = <INT>
-   <RR> { return LocationManager.buildOneD( x ); }
+   <RR>
 }
 
 void setTwoD()throws NumberFormatException, RuntimeException, ParseException :
@@ -278,268 +281,7 @@ void Param( HashMap<String,Double> parameters ) throws NumberFormatException, Ru
     t1 = <IDENTIFIER>
     <ASSIGN>
     t2 = <DOUBLE> 
-    <EOL> { paramters.put( t1, t2 ); }       
-}
-
-/*********
-AGENTS
-*********/
-
-void Agent() throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token t;
-    Agent agent;
-}
-{
-    t = <IDENTIFIER>
-    (<LR>
-    <KEYWORD_LOC>
-    <RR>
-     )*
-    <DEFINE>
-    Action(agent) 
-    (
-        <PLUS> 
-        Action(agent) 
-    )* 
-    <EOL>
-}
-
-void Action(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
-{}
-{   
-    [   
-        LOOKAHEAD(2)
-        NoInfAction(agent)
-        |
-        LOOKAHEAD(2)
-        InfAction(agent)
-        |
-        LOOKAHEAD(2)
-        PassAction(agent)
-    ]
-}
-
-
-void NoInfAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token name = null, rateName = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
-}
-{  
-    <LR>
-    name = <IDENTIFIER>
-    <COMMA>
-    rateName = <IDENTIFIER>
-    <RR>
-    symbol = MelaSymbol()
-    update = <IDENTIFIER>
-    <LR>
-    updateloc = UpdateLoc()
-     <RR>
-   (
-      <PARALLEL>
-      update2 = <IDENTIFIER>
-      <LR>
-      updateloc2 = UpdateLoc()
-      <RR>)?
-  }    
-
-
-Token MelaSymbol() throws NumberFormatException, RuntimeException, ParseException :
-{Token symbol = null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        symbol = < DOT >
-        |
-        LOOKAHEAD(1)
-        symbol = <  UP >
-        |
-        LOOKAHEAD(1)
-        symbol = <  DOWN >
-        |
-        LOOKAHEAD(1)
-        symbol = <  TRIANGLE >
-    ]
-    {
-      return symbol;
-    }   
-}  
-
-
-Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException :
-{Token update=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        update = < KEYWORD_LOC >
-        |
-        LOOKAHEAD(1)
-        update = <  IDENTIFIER >
-    ]
-    { 
-    return update;
-    }   
-}
-
-
-void InfAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException:
-{
-    Token infset=null, name = null, rate = null, symbolInf = null, update=null, updatelocInf=null, update2=null, updatelocInf2=null, rangeNeigh = null; 
-}
-{   
-    <DASH>
-    <RANG>
-    < LBRAC >
-    infset =  InfSet()
-    (<LR>
-    rangeNeigh = < INT >
-    <RR>)*  
-    < RBRAC >
-    <LR>    
-    name = <IDENTIFIER> 
-    <COMMA>
-    rate = <IDENTIFIER>
-    <RR> 
-    symbolInf = MelaSymbol()
-    update = <IDENTIFIER>
-    <LR>
-    updatelocInf = UpdateLoc()
-    <RR>
-   (<PARALLEL>
-    update2 = <IDENTIFIER>
-    <LR>
-    updatelocInf2 = UpdateLoc()
-    <RR>)?
-}
-
-
-Token InfSet() throws NumberFormatException, RuntimeException, ParseException :
-{Token set=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        set = < KEYWORD_LOC >
-        |
-        LOOKAHEAD(1)
-        set = <  KEYWORD_NEIGH >
-        |
-        LOOKAHEAD(1)
-        set = <  KEYWORD_ALL >
-    ]
-    {
-      return set;
-    }   
-}
-
-
-void PassAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token name = null, probName = null, update=null, updatelocPass=null, update2=null, updatelocPass2=null, updatelocInf2=null, symbolPass=null; 
-}
-{
-    <LANG>
-    <DASH>
-    <LR>
-    name = <IDENTIFIER> 
-    <COMMA>
-    probName = <IDENTIFIER>
-    <RR>
-    symbolPass = MelaSymbol() 
-    update = <IDENTIFIER>
-    <LR>
-    updatelocPass = UpdateLoc()
-    <RR>
-   (<PARALLEL>
-    update2 = <IDENTIFIER>
-    <LR>
-    updatelocInf2 = UpdateLoc()
-    <RR>)?
-   }  
-
-
-void EnvAgent() throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token t;
-    Agent agent;
-}
-{
-    t = <IDENTIFIER>
-    <DEFINE>
-    EnvAction(agent) 
-    (
-        <PLUS> 
-        EnvAction(agent) 
-    )* 
-    <EOL>
-} 
-    
-void EnvAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
-{
-    Token infsetE=null, name=null, rateName=null, symbolEnv=null, update, y=null,z=null, x1=null,y1=null,z1=null;
-}
-{     
-    <DASH>
-    {int check = 0;}
-    <RANG>
-    <LBRAC>
-    
-    /* here we need to distinguish between list and all! probably we need another method with lookahead */
-    
-    (<LR>
-    {check = 1;})?
-    {ArrayList<ArrayList<Integer>> infsetEnv = new ArrayList<ArrayList<Integer>>();}
-    infsetE = InfSetEnv()
-    {if (check == 0){
-    infsetEnv = GlobalManager.getLocationManager().getAllLoc();
-    }}
-    (
-       <COMMA>
-    y = <INT>
-    (
-       <COMMA>
-    z = <INT>
-    )?
-    )?
-    (<RR>)?   
-    (
-        <COMMA>
-        (<LR>)?
-        x1 = <INT>
-        (
-       <COMMA>
-        y1 = <INT>
-       (
-       <COMMA>
-        z1 = <INT>
-        )?
-        )? 
-    (<RR>)?     
-    )*  
-    <RBRAC>    
-    <LR>    
-    name = <IDENTIFIER>  
-    <COMMA>
-    rateName = <IDENTIFIER>
-    <RR> 
-    symbolEnv = MelaSymbol() 
-    update = <IDENTIFIER>
-  }
-
-
-Token InfSetEnv() throws NumberFormatException, RuntimeException, ParseException :
-{Token set=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        set = < INT >
-        |
-        LOOKAHEAD(1)
-        set = <  KEYWORD_ALL >
-    ]
-    {
-      return set;
-    }   
+    <EOL>    
 }
 
 
@@ -548,28 +290,40 @@ INITIAL CONDITIONS
 *********/
 
 
-BiFucntion<Integer,Integer,Integer>  Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
+//BiFunction<Integer,Integer,Integer>  Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
+void Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
+
 {  
-	HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<>();
+HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,HashMap<Integer,Integer>>();
 }
 {  
-    InitAgent( allocationMap ) 
+    InitAgent(m, allocationMap ) 
     (
         <PARALLEL> 
-        InitAgent( allocationMap ) 
-    )*        
-    { return (x,y) -> allocationMap.getOrDefault( x , new HashMap<>() ).getOrDefault( y , 0 ); }
+        InitAgent(m, allocationMap ) 
+    )*
+//{
+//
+//  
+//  BiFunction<Integer,Integer,Integer> initCond = (x, y) -> {
+//			Integer num = allocationMap.getOrDefault( x , new HashMap<Integer,Integer>() ).getOrDefault( y , 0 );
+//			return num;
+//		};
+//		return initCond;
+//}
+  
 }    
 
 
-InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMap  ) throws NumberFormatException, RuntimeException, ParseException :
+void InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMap  ) throws NumberFormatException, RuntimeException, ParseException :
 {    
-   int agentIndex;
-   int locationIndex;
+   int agentIndex = 0;
+   int locationIndex = 0;
    String locationName = "";
+   Token t, x, y, z, n;
 }
 {
-    t = <IDENTIFIER>
+    t = <IDENTIFIER> 
     (
     <LR>
     x = <INT> { locationName += x; }
@@ -581,17 +335,19 @@ InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMap  ) 
     z = <INT> { locationName += ","+z; }
     )?
     )?    
-    <RR> { locaitonIndex = lm.getLocationIndex(locationName);
+    <RR> { locationIndex = m.getLocationManager().getLocationIndex(locationName); }
     )?
     <LSQ>
     n = <INT>
-    <RSQ> { 
-    	HashMap<Integer,Integer> internalMap = allocationMap.get( agentIndex );
+    {int nValue = Integer.parseInt(n.image);}
+    <RSQ>
+    { 
+    HashMap<Integer,Integer> internalMap = allocationMap.get( agentIndex );
 	if (internalMap==null) {
-		internalMap = new HashMap<>();
+		internalMap = new HashMap<Integer,Integer>();
 		allocationMap.put( agentIndex , internalMap );
 	}
-	internalMap.put( locationIndex , n );
+	internalMap.put( locationIndex , nValue );
     }
 }
 

@@ -7,7 +7,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 
-import mela.io.MelaParser;
 import mela.model.Model;
 import mela.model.State;
 
@@ -60,8 +59,7 @@ public class Simulator {
 				double u1 = randomValue();
 				double u2 = randomValue();
 				Transition transition = select( enabled , totalRate*u1 );
-				//TODO check!! 1/totalRate
-				double dt = totalRate*Math.log(1/u2);
+				double dt = (1/totalRate)*Math.log(1/u2);
 				current = transition.apply(current);
 				t.add(transition.getInfo(),dt,current);
 				steps++;				
@@ -110,8 +108,9 @@ public class Simulator {
 	 * @param parametersFile: directory of parameters file
 	 */
 	public void simulate( File modelFile , File parametersFile ) {
-		MelaParser parser = MelaParser.getInstance();
-		simulate(parser.parseModel(modelFile),parser.parseParameters(parametersFile));
+		//TODO fix this once we have the parser
+		//MELAParser parser = MELAParser.getInstance();
+		//simulate(parser.parseModel(modelFile),parser.parseParameters(parametersFile));
 	}
 
 }

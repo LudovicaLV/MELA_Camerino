@@ -56,6 +56,13 @@ public class LocationManager {
 		return -1;
 	}
 	
+	public int getLocationIndex( Location l ) {
+		if (l != null) {
+			return l.getIndex();
+		}
+		return -1;
+	}
+	
 	//not used for the moment (but probably used for the action info)
 	public String getLocationName( int idx ) {
 		return locations.get(idx).getName();

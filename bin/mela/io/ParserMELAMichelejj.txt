@@ -1,0 +1,603 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(MELAparser)
+
+package ParserMELA;
+
+public class MELAparser {
+       
+    public MELAparser() {
+        this(new java.io.StringReader(""));
+    }
+
+    public void parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
+        this.ReInit(new java.io.StringReader(modelDef));
+        this.Input();
+    }
+
+    public void parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+        try { this.ReInit(new java.io.FileReader(filename)); }
+        catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
+        this.Input();
+    }
+
+}
+
+PARSER_END(MELAparser)
+
+/***************************************************************
+SKIP
+***************************************************************/
+
+<DEFAULT,RESET,ID> SKIP :
+{
+  " "
+  | "\t"
+  | "\n"
+  | "\r"
+
+  | <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+  | <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+
+/***************************************************************
+TOKENS
+***************************************************************/
+
+ /* LITERALS */
+TOKEN : { < #INTEGER: ("-")? ["0"-"9"] (["0"-"9"])* > }
+TOKEN : { < #FLOAT:
+                            ("-")?  (["0"-"9"])+ "." (["0"-"9"])*
+                            | ("-")?  "." (["0"-"9"])+
+                    > }
+TOKEN : { < #FLOAT_SCIENTIFIC:
+                             ("-")? (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)
+                            |  ("-")? "." (["0"-"9"])+ (<EXPONENT>)
+                            |  ("-")? (["0"-"9"])+ <EXPONENT>
+                    > }
+TOKEN : { < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ > }
+TOKEN: { < #LETTER: ["A"-"Z","a"-"z"] > }
+TOKEN: { < #DIGIT: ["0"-"9"] > }
+
+TOKEN: { < #WORD: (["A"-"Z","a"-"z"])+ > }
+
+	
+/*
+IDENTIFIERS
+*/
+
+<DEFAULT> TOKEN : { <SECTION_SPACE : "#Space" > }
+<DEFAULT> TOKEN : { <SECTION_PARAM : "#Parameters" > }
+<DEFAULT> TOKEN : { <SECTION_AGENTS : "#Agents" > }
+<DEFAULT> TOKEN : { <SECTION_ENV : "#Environment" > }
+<DEFAULT> TOKEN : { <SECTION_INIT : "#Initial conditions" > }
+
+<DEFAULT> TOKEN : { <VERTICES : "L" > }
+<DEFAULT> TOKEN : { <EDGES : "E" > }
+
+<DEFAULT> TOKEN : { <KEYWORD_GRAPH : "Graph" > }
+<DEFAULT> TOKEN : { <KEYWORD_ONED : "OneD" > }
+<DEFAULT> TOKEN : { <KEYWORD_TWOD : "TwoD" > }
+<DEFAULT> TOKEN : { <KEYWORD_THREED : "ThreeD" > }
+
+<DEFAULT> TOKEN : { <KEYWORD_LOC : "l" > }
+<DEFAULT> TOKEN : { <KEYWORD_NEIGH : "N" > }
+<DEFAULT> TOKEN : { <KEYWORD_ALL : "all" > }
+
+<DEFAULT> TOKEN : { <EOL : ";" > }
+<DEFAULT> TOKEN : { <PLUS : "+" > }
+<DEFAULT> TOKEN : { <DOT : "." > }
+<DEFAULT> TOKEN : { <SEMICOLON : ":" > }
+<DEFAULT> TOKEN : { <DEFINE : ":=" > }
+
+<DEFAULT> TOKEN : { <ASSIGN : "=" >}
+<DEFAULT> TOKEN : { <LSQ : "[" >}
+<DEFAULT> TOKEN : { <RSQ : "]" >}
+<DEFAULT> TOKEN : { <LR : "(" > }
+<DEFAULT> TOKEN : { <RR : ")" > }
+<DEFAULT> TOKEN : { <QUO : "\"" > }
+<DEFAULT> TOKEN : { <SQUO : "\'" > }
+<DEFAULT> TOKEN : { <EXCL : "!" > }
+<DEFAULT> TOKEN : { <LBRAC : "{" > }
+<DEFAULT> TOKEN : { <RBRAC : "}" > }
+
+<DEFAULT> TOKEN : { <COMMA : "," >}
+<DEFAULT> TOKEN : { <LANG : "<" > }
+<DEFAULT> TOKEN : { <RANG : ">" > }
+<DEFAULT> TOKEN : { <PARALLEL : "||" > }
+
+<DEFAULT> TOKEN : { <TRIANGLE : "|>" > }
+
+<DEFAULT> TOKEN : { <DASH : "-" > }
+
+<DEFAULT> TOKEN : { <UP : ">>" > }
+<DEFAULT> TOKEN : { <DOWN : "<<" > }
+
+/*<DEFAULT> TOKEN: { <MELASYMBOL: < DOT > > }*/
+
+<DEFAULT> TOKEN : {<INT : <INTEGER> > }
+<DEFAULT> TOKEN : {<DOUBLE : <FLOAT>|<FLOAT_SCIENTIFIC> > }
+<DEFAULT> TOKEN: { <IDENTIFIER: <LETTER>(<LETTER>|<DIGIT>|"_"|"$"|"#")*> }
+
+/*<DEFAULT> TOKEN: { <UPDATE_LOC: <WORD>> } */
+
+<MATH> TOKEN : { <MATH_EXPR : (<DIGIT> | <SYMBOL> | <SPACE> | <M_AND> | <M_OR> | <M_LINER> | <M_LINEN> | <SQUO>)+ > : DEFAULT }
+<MATH> TOKEN : { <#SPACE : " " | "\t"> }
+<MATH> TOKEN : { <#M_AND : "&&" > }
+<MATH> TOKEN : { <#M_OR : "|"> }
+<MATH> TOKEN : { <#M_LINER : "\r"> }
+<MATH> TOKEN : { <#M_LINEN : "\n"> }
+
+
+TOKEN : { <#SYMBOL : [".", "=", "+", "-", "*", "/", "%", "^", "(", ")", "!", "<", ">", ",", "_", "[","]" ]> }
+TOKEN : { <#PARAM_SYMBOL : [".", "+", "-", "*", "/", "%", "^" ]> }
+
+
+/***********************************************
+GRAMMAR RULES
+***********************************************/
+
+/*********
+MODEL STRUCTURE
+*********/
+
+Model Input() throws NumberFormatException, RuntimeException, ParseException :
+{
+    Model m = new Model();    
+    LocationManager lm;
+    HashMap<String,Double> parameters = new HashMap<String,Double>();
+}
+{   <SECTION_SPACE>
+	<SEMICOLON>
+   	lm = SpaceStructure() { m.setLocationManager(lm); }
+    <SECTION_PARAM>
+    (
+      Param( parameters )
+    )*  
+	<SECTION_AGENTS>
+    (
+	  Agent()     
+    )+
+	(<SECTION_ENV>  
+	  EnvAgent()     
+    )*
+   <SECTION_INIT>
+    (
+      BiFunction<Integer,Integer,Integer> allocation = Init()
+      { model.setAgentAllocationFunction( allocation ); } 
+    )
+    <EOF>
+}
+
+/*********
+SPACE
+*********/
+
+LocationManager SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
+{Token spaceKey=null;}
+{   
+    [   
+        LOOKAHEAD(2)
+        < KEYWORD_GRAPH >
+        lm=setGraph() { return lm; }
+        |
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_ONED >
+        {setOneD();}
+        |
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_TWOD >
+        {setTwoD();}
+        |
+        LOOKAHEAD(2)
+        spaceKey = < KEYWORD_THREED >
+        {setThreeD();}
+    ]
+    {
+      return spaceKey;
+    }   
+}
+
+
+LocationManager setGraph()throws NumberFormatException, RuntimeException, ParseException :
+{
+    LocationManager lm = new LocationManager();
+}
+{   < VERTICES >
+    < ASSIGN >
+    < LBRAC >
+    v = <INT> { lm.createLocation(v+""); }
+    (
+       <COMMA>
+       v1 = <INT> { lm.createLocation(v+""); }
+    )*
+    < RBRAC >
+    < EOL >
+    < EDGES >
+    <ASSIGN>
+    <LBRAC>
+     <LBRAC>
+     e = <INT>
+     <COMMA>
+     e1 = <INT>
+     { lm.addEdge(lm.getLocation(e+""), lm.getLocation(e1+"")); }
+     <RBRAC>
+     ( 
+       <COMMA>
+       <LBRAC>
+       e = <INT>
+       <COMMA>
+       e1 = <INT>
+     { lm.addEdge(lm.getLocation(e+""),lm.getLocation(e1+""));}
+       )*
+     <RBRAC>
+     < EOL >  {  return lm; }
+}
+
+void setOneD()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token x;
+}
+{   <LR>
+    x = <INT>
+   <RR>
+   { return lm.buildOneD( x ); }
+}
+
+void setTwoD()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token x, y;
+}
+{   <LR>
+    x = <INT>
+    < COMMA >
+    y = < INT >
+   <RR>
+}
+
+void setThreeD()throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token x, y, z;
+}
+{   <LR>
+    x = <INT>
+    < COMMA >
+    y = < INT >
+    < COMMA >
+    z = < INT >
+   <RR>
+}
+
+/*********
+PARAMETERS
+*********/
+
+void Param( HashMap<String,Double> parameters ) throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token t1,t2;    
+}
+{		
+    t1 = <IDENTIFIER>
+    <ASSIGN>
+    t2 = <DOUBLE> 
+    <EOL>
+    { paramters.put( t1, t2 ); }       
+}
+
+/*********
+AGENTS
+*********/
+
+void Agent() throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token t;
+    Agent agent;
+}
+{
+    t = <IDENTIFIER>
+    (<LR>
+    <KEYWORD_LOC>
+    <RR>
+     )*
+    <DEFINE>
+    Action(agent) 
+    (
+        <PLUS> 
+        Action(agent) 
+    )* 
+    <EOL>
+}
+
+void Action(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
+{}
+{   
+    [   
+        LOOKAHEAD(2)
+        NoInfAction(agent)
+        |
+        LOOKAHEAD(2)
+        InfAction(agent)
+        |
+        LOOKAHEAD(2)
+        PassAction(agent)
+    ]
+}
+
+
+void NoInfAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token name = null, rateName = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
+}
+{  
+    <LR>
+    name = <IDENTIFIER>
+    <COMMA>
+    rateName = <IDENTIFIER>
+    <RR>
+    symbol = MelaSymbol()
+    update = <IDENTIFIER>
+    <LR>
+    updateloc = UpdateLoc()
+     <RR>
+   (
+      <PARALLEL>
+      update2 = <IDENTIFIER>
+      <LR>
+      updateloc2 = UpdateLoc()
+      <RR>)?
+  }    
+
+
+Token MelaSymbol() throws NumberFormatException, RuntimeException, ParseException :
+{Token symbol = null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        symbol = < DOT >
+        |
+        LOOKAHEAD(1)
+        symbol = <  UP >
+        |
+        LOOKAHEAD(1)
+        symbol = <  DOWN >
+        |
+        LOOKAHEAD(1)
+        symbol = <  TRIANGLE >
+    ]
+    {
+      return symbol;
+    }   
+}  
+
+
+Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException :
+{Token update=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        update = < KEYWORD_LOC >
+        |
+        LOOKAHEAD(1)
+        update = <  IDENTIFIER >
+    ]
+    { 
+    return update;
+    }   
+}
+
+
+void InfAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException:
+{
+    Token infset=null, name = null, rate = null, symbolInf = null, update=null, updatelocInf=null, update2=null, updatelocInf2=null, rangeNeigh = null; 
+}
+{   
+    <DASH>
+    <RANG>
+    < LBRAC >
+    infset =  InfSet()
+    (<LR>
+    rangeNeigh = < INT >
+    <RR>)*  
+    < RBRAC >
+    <LR>    
+    name = <IDENTIFIER> 
+    <COMMA>
+    rate = <IDENTIFIER>
+    <RR> 
+    symbolInf = MelaSymbol()
+    update = <IDENTIFIER>
+    <LR>
+    updatelocInf = UpdateLoc()
+    <RR>
+   (<PARALLEL>
+    update2 = <IDENTIFIER>
+    <LR>
+    updatelocInf2 = UpdateLoc()
+    <RR>)?
+}
+
+
+Token InfSet() throws NumberFormatException, RuntimeException, ParseException :
+{Token set=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        set = < KEYWORD_LOC >
+        |
+        LOOKAHEAD(1)
+        set = <  KEYWORD_NEIGH >
+        |
+        LOOKAHEAD(1)
+        set = <  KEYWORD_ALL >
+    ]
+    {
+      return set;
+    }   
+}
+
+
+void PassAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token name = null, probName = null, update=null, updatelocPass=null, update2=null, updatelocPass2=null, updatelocInf2=null, symbolPass=null; 
+}
+{
+    <LANG>
+    <DASH>
+    <LR>
+    name = <IDENTIFIER> 
+    <COMMA>
+    probName = <IDENTIFIER>
+    <RR>
+    symbolPass = MelaSymbol() 
+    update = <IDENTIFIER>
+    <LR>
+    updatelocPass = UpdateLoc()
+    <RR>
+   (<PARALLEL>
+    update2 = <IDENTIFIER>
+    <LR>
+    updatelocInf2 = UpdateLoc()
+    <RR>)?
+   }  
+
+
+void EnvAgent() throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token t;
+    Agent agent;
+}
+{
+    t = <IDENTIFIER>
+    <DEFINE>
+    EnvAction(agent) 
+    (
+        <PLUS> 
+        EnvAction(agent) 
+    )* 
+    <EOL>
+} 
+    
+void EnvAction(Agent agent) throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token infsetE=null, name=null, rateName=null, symbolEnv=null, update, y=null,z=null, x1=null,y1=null,z1=null;
+}
+{     
+    <DASH>
+    {int check = 0;}
+    <RANG>
+    <LBRAC>
+    
+    /* here we need to distinguish between list and all! probably we need another method with lookahead */
+    
+    (<LR>
+    {check = 1;})?
+    {ArrayList<ArrayList<Integer>> infsetEnv = new ArrayList<ArrayList<Integer>>();}
+    infsetE = InfSetEnv()
+    {if (check == 0){
+    infsetEnv = GlobalManager.getLocationManager().getAllLoc();
+    }}
+    (
+       <COMMA>
+    y = <INT>
+    (
+       <COMMA>
+    z = <INT>
+    )?
+    )?
+    (<RR>)?   
+    (
+        <COMMA>
+        (<LR>)?
+        x1 = <INT>
+        (
+       <COMMA>
+        y1 = <INT>
+       (
+       <COMMA>
+        z1 = <INT>
+        )?
+        )? 
+    (<RR>)?     
+    )*  
+    <RBRAC>    
+    <LR>    
+    name = <IDENTIFIER>  
+    <COMMA>
+    rateName = <IDENTIFIER>
+    <RR> 
+    symbolEnv = MelaSymbol() 
+    update = <IDENTIFIER>
+  }
+
+
+Token InfSetEnv() throws NumberFormatException, RuntimeException, ParseException :
+{Token set=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        set = < INT >
+        |
+        LOOKAHEAD(1)
+        set = <  KEYWORD_ALL >
+    ]
+    {
+      return set;
+    }   
+}
+
+
+/*********
+INITIAL CONDITIONS
+*********/
+
+
+BiFucntion<Integer,Integer,Integer>  Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
+{  
+	HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<>();
+}
+{  
+    InitAgent( allocationMap ) 
+    (
+        <PARALLEL> 
+        InitAgent( allocationMap ) 
+    )*        
+    { return (x,y) -> allocationMap.getOrDefault( x , new HashMap<>() ).getOrDefault( y , 0 ); }
+}    
+
+
+InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMap  ) throws NumberFormatException, RuntimeException, ParseException :
+{    
+   int agentIndex;
+   int locationIndex;
+   String locationName = "";
+}
+{
+    t = <IDENTIFIER>
+    (
+    <LR>
+    x = <INT> { locationName += x; }
+    (
+       <COMMA>
+    y = <INT> { locationName += ","+y; }
+    (
+       <COMMA>
+    z = <INT> { locationName += ","+z; }
+    )?
+    )?    
+    <RR> { locaitonIndex = lm.getLocationIndex(locationName);
+    )?
+    <LSQ>
+    n = <INT>
+    <RSQ> { 
+    	HashMap<Integer,Integer> internalMap = allocationMap.get( agentIndex );
+	if (internalMap==null) {
+		internalMap = new HashMap<>();
+		allocationMap.put( agentIndex , internalMap );
+	}
+	internalMap.put( locationIndex , n );
+    }
+}
+
