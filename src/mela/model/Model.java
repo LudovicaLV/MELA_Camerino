@@ -19,15 +19,19 @@ public class Model {
 		
 	private AgentManager agentManager;
 	private LocationManager locationManager;
-	private BiFunction<Integer,Integer,Integer> agentAllAgentLocationFunction;
+	private BiFunction<Integer,Integer,Integer> agentLocationFunction;
 	
 	
 	public void setAgentManager(AgentManager agentManager){
-		this.agentManager = new AgentManager();
+		this.agentManager = agentManager;
 	}
 	
 	public void setLocationManager(LocationManager locationManager){
-		this.locationManager = new LocationManager();
+		this.locationManager = locationManager;
+	}
+	
+	public void setBiFunction(BiFunction<Integer,Integer,Integer> agentLocationFunction){
+		this.agentLocationFunction = agentLocationFunction;
 	}
 	
 	/**
@@ -36,7 +40,7 @@ public class Model {
 	public State getInitialState() {
 		int namesSize = agentManager.size();
 		int allLocSize = locationManager.size();
-		State initState = new State(namesSize, allLocSize, agentAllAgentLocationFunction);
+		State initState = new State(namesSize, allLocSize, agentLocationFunction);
 		// TODO initMatrix is initialised during the parsing of the model
 		return initState;
 	}
@@ -77,4 +81,7 @@ public class Model {
 		return agentManager;
 	}
 
+	public BiFunction<Integer,Integer,Integer> getInitCond() {
+		return agentLocationFunction;
+	}
 }

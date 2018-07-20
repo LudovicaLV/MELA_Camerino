@@ -12,7 +12,12 @@ public class MELAparser implements MELAparserConstants {
     public MELAparser() {
         this(new java.io.StringReader(""));
     }
-    
+
+    public Model parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
+        this.ReInit(new java.io.StringReader(modelDef));
+        return Input();
+    }
+
         public Model parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
@@ -33,7 +38,7 @@ MODEL STRUCTURE
     jj_consume_token(SECTION_SPACE);
     jj_consume_token(SEMICOLON);
     lm = SpaceStructure();
-    m.setLocationManager(lm);
+          m.setLocationManager(lm);
     jj_consume_token(SECTION_PARAM);
     label_1:
     while (true) {
@@ -48,6 +53,12 @@ MODEL STRUCTURE
       Param(parameters);
     }
     jj_consume_token(SECTION_INIT);
+  HashMap<Integer,HashMap<Integer,Integer>> alllocationMap = Init(m);
+  BiFunction<Integer,Integer,Integer> initCond = (x, y) -> {
+  Integer num = alllocationMap.getOrDefault( x , new HashMap<Integer,Integer>() ).getOrDefault( y , 0 );
+  return num;};
+  m.setBiFunction( initCond );
+
     {if (true) return m;}
     jj_consume_token(0);
     throw new Error("Missing return statement in function");
@@ -65,18 +76,21 @@ SPACE
     case KEYWORD_TWOD:
     case KEYWORD_THREED:
       if (jj_2_1(2)) {
-        jj_consume_token(KEYWORD_GRAPH);
+        spaceKey = jj_consume_token(KEYWORD_GRAPH);
         lm = setGraph();
                         {if (true) return lm;}
       } else if (jj_2_2(2)) {
         spaceKey = jj_consume_token(KEYWORD_ONED);
-         setOneD();
+        lm = setOneD();
+                       {if (true) return lm;}
       } else if (jj_2_3(2)) {
         spaceKey = jj_consume_token(KEYWORD_TWOD);
-         setTwoD();
+        lm = setTwoD();
+                         {if (true) return lm;}
       } else if (jj_2_4(2)) {
         spaceKey = jj_consume_token(KEYWORD_THREED);
-         setThreeD();
+        lm = setThreeD();
+                           {if (true) return lm;}
       } else {
         jj_consume_token(-1);
         throw new ParseException();
@@ -97,7 +111,9 @@ SPACE
     jj_consume_token(ASSIGN);
     jj_consume_token(LBRAC);
     v = jj_consume_token(INT);
-      lm.createLocation(v+"");
+      int vValue = Integer.parseInt(v.image);
+      String name = lm.createLocationName(vValue);
+      lm.createLocation(name);
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -110,18 +126,26 @@ SPACE
       }
       jj_consume_token(COMMA);
       v1 = jj_consume_token(INT);
-      lm.createLocation(v+"");
+      int v1Value = Integer.parseInt(v1.image);
+      String name1 = lm.createLocationName(v1Value);
+      lm.createLocation(name1);
     }
     jj_consume_token(RBRAC);
-    jj_consume_token(EOL);
     jj_consume_token(EDGES);
     jj_consume_token(ASSIGN);
     jj_consume_token(LBRAC);
     jj_consume_token(LBRAC);
     e = jj_consume_token(INT);
+      if (!(lm.locationInLocationManager("["+e+"]"))){
+         {if (true) throw new Error("Location " +  e+"" + " is not defined.");}
+     }
     jj_consume_token(COMMA);
     e1 = jj_consume_token(INT);
+      if (!(lm.locationInLocationManager("["+e1+"]"))){
+         {if (true) throw new Error("Location " +  e1+"" + " is not defined.");}
+     }
     jj_consume_token(RBRAC);
+       lm.addEdge(lm.getLocation("["+e+"]"), lm.getLocation("["+e1+"]"));
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -135,33 +159,85 @@ SPACE
       jj_consume_token(COMMA);
       jj_consume_token(LBRAC);
       e = jj_consume_token(INT);
+        if (!(lm.locationInLocationManager("["+e+"]"))){
+         {if (true) throw new Error("Location " +  e+"" + " is not defined.");}
+     }
       jj_consume_token(COMMA);
       e1 = jj_consume_token(INT);
+       if (!(lm.locationInLocationManager("["+e1+"]"))){
+         {if (true) throw new Error("Location " +  e1+"" + " is not defined.");}
+     }
+      jj_consume_token(RBRAC);
+      lm.addEdge(lm.getLocation("["+e+"]"), lm.getLocation("["+e1+"]"));
     }
     jj_consume_token(RBRAC);
-    jj_consume_token(EOL);
         {if (true) return lm;}
     throw new Error("Missing return statement in function");
   }
 
-  final public void setOneD() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public LocationManager setOneD() throws ParseException, NumberFormatException, RuntimeException, ParseException {
     Token x;
+    Boolean boundaryChoice;
     jj_consume_token(LR);
     x = jj_consume_token(INT);
     jj_consume_token(RR);
+    jj_consume_token(KEYWORD_BOUNDARY);
+    jj_consume_token(SEMICOLON);
+    boundaryChoice = boundary();
+    int xValue = Integer.parseInt(x.image);
+    LocationManager lm = new LocationManager();
+    {if (true) return lm.buildGridOne( xValue, boundaryChoice );}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void setTwoD() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public Boolean boundary() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+ Token spaceKey=null;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case KEYWORD_PERIODIC:
+    case KEYWORD_BOUNCING:
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case KEYWORD_PERIODIC:
+        spaceKey = jj_consume_token(KEYWORD_PERIODIC);
+          {if (true) return true;}
+        break;
+      case KEYWORD_BOUNCING:
+        spaceKey = jj_consume_token(KEYWORD_BOUNCING);
+          {if (true) return false;}
+        break;
+      default:
+        jj_la1[4] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      break;
+    default:
+      jj_la1[5] = jj_gen;
+      ;
+    }
+    throw new Error("Missing return statement in function");
+  }
+
+  final public LocationManager setTwoD() throws ParseException, NumberFormatException, RuntimeException, ParseException {
     Token x, y;
+    Boolean boundaryChoice;
     jj_consume_token(LR);
     x = jj_consume_token(INT);
     jj_consume_token(COMMA);
     y = jj_consume_token(INT);
     jj_consume_token(RR);
+    jj_consume_token(KEYWORD_BOUNDARY);
+    jj_consume_token(SEMICOLON);
+    boundaryChoice = boundary();
+     int xValue = Integer.parseInt(x.image);
+    int yValue = Integer.parseInt(y.image);
+    LocationManager lm = new LocationManager();
+    {if (true) return lm.buildGridTwo( xValue, yValue, boundaryChoice );}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void setThreeD() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public LocationManager setThreeD() throws ParseException, NumberFormatException, RuntimeException, ParseException {
     Token x, y, z;
+    Boolean boundaryChoice;
     jj_consume_token(LR);
     x = jj_consume_token(INT);
     jj_consume_token(COMMA);
@@ -169,6 +245,15 @@ SPACE
     jj_consume_token(COMMA);
     z = jj_consume_token(INT);
     jj_consume_token(RR);
+    jj_consume_token(KEYWORD_BOUNDARY);
+    jj_consume_token(SEMICOLON);
+    boundaryChoice = boundary();
+    int xValue = Integer.parseInt(x.image);
+    int yValue = Integer.parseInt(y.image);
+    int zValue = Integer.parseInt(z.image);
+    LocationManager lm = new LocationManager();
+    {if (true) return lm.buildGridThree( xValue, yValue, zValue, boundaryChoice);}
+    throw new Error("Missing return statement in function");
   }
 
 /*********
@@ -180,6 +265,12 @@ PARAMETERS
     jj_consume_token(ASSIGN);
     t2 = jj_consume_token(DOUBLE);
     jj_consume_token(EOL);
+     double value = Double.parseDouble(t2.image);
+    String name = t1.image;
+     if (parameters.containsKey(name)){
+         {if (true) throw new Error("Parameter " +  name + " already defined.");}
+     }else{
+     parameters.put( name, value ); }
   }
 
 /*********
@@ -188,9 +279,9 @@ INITIAL CONDITIONS
 
 
 //BiFunction<Integer,Integer,Integer>  Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
-  final public void Init(Model m) throws ParseException, NumberFormatException, RuntimeException, ParseException {
-HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,HashMap<Integer,Integer>>();
-    InitAgent(m, allocationMap);
+  final public HashMap<Integer,HashMap<Integer,Integer>> Init(Model m) throws ParseException, NumberFormatException, RuntimeException, ParseException {
+HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,HashMap<Integer,Integer>>();
+    InitAgent(m, allLocationMap);
     label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -198,18 +289,20 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
         ;
         break;
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[6] = jj_gen;
         break label_4;
       }
       jj_consume_token(PARALLEL);
-      InitAgent(m, allocationMap);
+      InitAgent(m, allLocationMap);
     }
+  {if (true) return allLocationMap;}
+    throw new Error("Missing return statement in function");
   }
 
   final public void InitAgent(Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMap) throws ParseException, NumberFormatException, RuntimeException, ParseException {
    int agentIndex = 0;
    int locationIndex = 0;
-   String locationName = "";
+   String locationName = "[";
    Token t, x, y, z, n;
     t = jj_consume_token(IDENTIFIER);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -221,27 +314,33 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
       case COMMA:
         jj_consume_token(COMMA);
         y = jj_consume_token(INT);
-                locationName += ","+y;
+                locationName += ", "+y;
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
           jj_consume_token(COMMA);
           z = jj_consume_token(INT);
-                locationName += ","+z;
+                locationName += ", "+z;
           break;
         default:
-          jj_la1[5] = jj_gen;
+          jj_la1[7] = jj_gen;
           ;
         }
         break;
       default:
-        jj_la1[6] = jj_gen;
+        jj_la1[8] = jj_gen;
         ;
       }
       jj_consume_token(RR);
-           locationIndex = m.getLocationManager().getLocationIndex(locationName);
+      locationName += "]";
+      if (m.getLocationManager().getLocationIndex(locationName) != -1){
+          locationIndex = m.getLocationManager().getLocationIndex(locationName);
+      }else{
+          {if (true) throw new Error("Location  " +  locationName + " does not exist.");}
+      };
+      locationIndex = m.getLocationManager().getLocationIndex(locationName);
       break;
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[9] = jj_gen;
       ;
     }
     jj_consume_token(LSQ);
@@ -284,13 +383,25 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     finally { jj_save(3, xla); }
   }
 
+  private boolean jj_3R_7() {
+    if (jj_scan_token(LR)) return true;
+    return false;
+  }
+
   private boolean jj_3_3() {
     if (jj_scan_token(KEYWORD_TWOD)) return true;
+    if (jj_3R_7()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    if (jj_scan_token(LR)) return true;
     return false;
   }
 
   private boolean jj_3_2() {
     if (jj_scan_token(KEYWORD_ONED)) return true;
+    if (jj_3R_6()) return true;
     return false;
   }
 
@@ -301,6 +412,12 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
 
   private boolean jj_3_4() {
     if (jj_scan_token(KEYWORD_THREED)) return true;
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_6() {
+    if (jj_scan_token(LR)) return true;
     return false;
   }
 
@@ -321,18 +438,23 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[8];
+  final private int[] jj_la1 = new int[10];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
+  static private int[] jj_la1_2;
   static {
       jj_la1_init_0();
       jj_la1_init_1();
+      jj_la1_init_2();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x0,0x1e00000,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x0,0x1e00000,0x0,0x0,0xc000000,0xc000000,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x200000,0x0,0x800,0x800,0x4000,0x800,0x800,0x10,};
+      jj_la1_1 = new int[] {0x1000000,0x0,0x4000,0x4000,0x0,0x0,0x20000,0x4000,0x4000,0x80,};
+   }
+   private static void jj_la1_init_2() {
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[4];
   private boolean jj_rescan = false;
@@ -349,7 +471,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -364,7 +486,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -375,7 +497,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -386,7 +508,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -396,7 +518,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -406,7 +528,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 8; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 10; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -518,12 +640,12 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[62];
+    boolean[] la1tokens = new boolean[65];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 10; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -532,10 +654,13 @@ HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,Ha
           if ((jj_la1_1[i] & (1<<j)) != 0) {
             la1tokens[32+j] = true;
           }
+          if ((jj_la1_2[i] & (1<<j)) != 0) {
+            la1tokens[64+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 62; i++) {
+    for (int i = 0; i < 65; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

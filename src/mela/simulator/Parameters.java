@@ -9,15 +9,22 @@ package mela.simulator;
  */
 public class Parameters {
 	
-	static int numberOfRuns;
-	static StoppingPredicate stopPredicate;
-	static DataHandler dataHandler;
-	
-	public Parameters(){
-		this.numberOfRuns = numberOfRuns;
-		this.stopPredicate = stopPredicate;
-		this.dataHandler = dataHandler;		
+	private int numberOfRuns;
+	private StoppingPredicate stopPredicate;
+	private DataHandler dataHandler;
+
+	public void setSimulationRuns(int numberOfRunsEntry){
+		this.numberOfRuns = numberOfRunsEntry;
 	}
+	
+	public void setStoppingPredicate(StoppingPredicate stopPredicateEntry){
+		this.stopPredicate = stopPredicateEntry;
+	}
+	
+	public void setDataHandler(DataHandler dataHandlerEntry){
+		this.dataHandler = dataHandlerEntry;
+	}
+	
 
 	public int getSimulationRuns() {
 		return numberOfRuns;

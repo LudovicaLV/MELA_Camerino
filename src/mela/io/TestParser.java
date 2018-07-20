@@ -1,6 +1,5 @@
 package mela.io;
 
-
 public class TestParser {	
 
 	public static void main(String[] args) throws Exception {

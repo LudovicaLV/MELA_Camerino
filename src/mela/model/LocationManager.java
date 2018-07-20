@@ -33,6 +33,12 @@ public class LocationManager {
 		return locations;
 	}
 	
+    public int getIndexFromName (String name){
+    	Location toCheck = getLocation(name);
+    	int index = toCheck.getIndex();
+    	return index;
+    }
+	
 	public Location createLocation( String name ) {
 		if (directory.containsKey(name)) {
 			throw new IllegalArgumentException("Duplicated location name!");
@@ -63,6 +69,10 @@ public class LocationManager {
 		return -1;
 	}
 	
+	public boolean locationInLocationManager (String name){
+		return locations.contains(directory.get(name));
+	}
+	
 	//not used for the moment (but probably used for the action info)
 	public String getLocationName( int idx ) {
 		return locations.get(idx).getName();
@@ -74,9 +84,21 @@ public class LocationManager {
 	 * use in the creation of 2D and 3D grid
 	 * @return name of the location
 	 */
-	public static String locationName(int ... args) {
-		return Arrays.toString(args);
+	public static String createLocationName(int x) {
+		int[] xArray = {x};
+		return Arrays.toString(xArray);
 	}
+	
+	public static String createLocationName(int x, int y) {
+		int[] xyArray = {x,y};
+		return Arrays.toString(xyArray);
+	}
+	
+	public static String createLocationName(int x, int y, int z) {
+		int[] xyzArray = {x,y,z};
+		return Arrays.toString(xyzArray);
+	}
+
 
 	public int size() {
 		return locations.size();
@@ -220,7 +242,7 @@ public class LocationManager {
 		LocationManager lm = new LocationManager();
 		Location[] locations = new Location[length];
 		for( int i=0 ; i<length ; i++ ) {
-			locations[i] = lm.createLocation(""+i);
+			locations[i] = lm.createLocation(lm.createLocationName(i));
 		}
 		for( int i=0 ; i<length-1 ; i++ ) {
 			lm.addEdge(locations[i], 1, locations[i+1]);
@@ -248,7 +270,7 @@ public class LocationManager {
 		
 		for (int i=0 ; i<lengthX ; i++) {
 			for (int j=0 ; j<lengthY ; j++ ) {
-				locations[i][j] = lm.createLocation(locationName(i,j));
+				locations[i][j] = lm.createLocation(createLocationName(i,j));
 			}
 		}
 
@@ -266,6 +288,10 @@ public class LocationManager {
 		return lm;
 	}
 	
+	public static LocationManager buildGridTwo(int lengthX, int lengthY) {
+		return buildGridTwo( lengthX , lengthY, false );
+	}
+	
 	
 	/**
 	 * @param lengthX: dimension
@@ -281,7 +307,7 @@ public class LocationManager {
 		for (int i=0 ; i<lengthX ; i++) {
 			for (int j=0 ; j<lengthY ; j++ ) {
 				for (int k=0 ; k<lengthZ ; k++ ) {
-					locations[i][j][k] = lm.createLocation(locationName(i,j,k));
+					locations[i][j][k] = lm.createLocation(createLocationName(i,j,k));
 				}
 			}
 		}
@@ -305,6 +331,10 @@ public class LocationManager {
 		return lm;
 	}
 		
+	public static LocationManager buildGridThree(int lengthX, int lengthY, int lengthZ) {
+		return buildGridThree( lengthX , lengthY, lengthZ, false );
+	}
+	
 	/**
 	 * @return build the graph
 	 */

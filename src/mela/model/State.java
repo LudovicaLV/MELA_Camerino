@@ -72,6 +72,10 @@ public class State {
 		}
 		return newState;
 	}
+	
+	public int numberLocations(){
+		return locations;
+	}
 
     
 }

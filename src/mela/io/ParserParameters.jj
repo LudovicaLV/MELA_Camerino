@@ -2,19 +2,22 @@ options {
   STATIC = false;
 }
 
-PARSER_BEGIN(MELArules)
+PARSER_BEGIN(MELAParameters)
 
-package ParserRules;
+package mela.io;
 
-public class MELArules {
+import mela.simulator.ActionCount;
+import mela.simulator.Parameters;
+import mela.simulator.Population;
+import mela.simulator.PopulationLocation;
+import mela.simulator.StepsPredicate;
+import mela.simulator.StoppingPredicate;
+import mela.simulator.TemporalHorizon;
+
+public class MELAParameters {
        
-    public MELArules() {
+    public MELAParameters() {
         this(new java.io.StringReader(""));
-    }
-
-    public void parseFromString( String modelDef ) throws ParseException, TokenMgrError, NumberFormatException {
-        this.ReInit(new java.io.StringReader(modelDef));
-        this.Input();
     }
 
     public void parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
@@ -25,7 +28,7 @@ public class MELArules {
 
 }
 
-PARSER_END(MELArules)
+PARSER_END(MELAParameters)
 
 /***************************************************************
 SKIP
@@ -77,10 +80,6 @@ IDENTIFIERS
 <DEFAULT> TOKEN : { <KEYWORD_ACTION : "#ActionCount" > }
 <DEFAULT> TOKEN : { <KEYWORD_STEP : "#Steps" > }
 
-<DEFAULT> TOKEN : { <KEYWORD_BOUNDARY : "#Boundary" > }
-<DEFAULT> TOKEN : { <KEYWORD_PERIODIC : "Periodic" > }
-<DEFAULT> TOKEN : { <KEYWORD_BOUNCING : "Bouncing" > }
-
 <DEFAULT> TOKEN : { <KEYWORD_TOTAL : "#Total population" > }
 <DEFAULT> TOKEN : { <KEYWORD_COUNT : "#Action" > }
 
@@ -113,22 +112,18 @@ GRAMMAR RULES
 
 void Input() throws NumberFormatException, RuntimeException, ParseException :
 {
-
+Parameters modelParam = new Parameters();
+StoppingPredicate stoppingPredicate;
+Token population, population2, action, action2, runs;
 }
 {   
     <KEYWORD_RUN>
     <ASSIGN>
     runs = <INT>
-
-    time_boundary = BoundChoice()  
-    
-    (<KEYWORD_BOUNDARY>
-    <SEMICOLON>
-    boundary = BoundaryOptions())?
-    
-//    {if (boundary == null){
-//    set "periodic" by default}
-//    } 
+    {int runsValue = Integer.parseInt(runs.image);
+     modelParam.setSimulationRuns(runsValue); }
+    stoppingPredicate = StopChoice()
+    {modelParam.setStoppingPredicate(stoppingPredicate);}
       
     (
     <KEYWORD_TOTAL>
@@ -147,66 +142,76 @@ void Input() throws NumberFormatException, RuntimeException, ParseException :
     <EOF>
 }
 
-Token BoundChoice() throws NumberFormatException, RuntimeException, ParseException :
-{Token bound=null, timeTotal=null, nameAgent, actionName=null, actionValue=null, x=null,y=null,z=null;}
+StoppingPredicate StopChoice() throws NumberFormatException, RuntimeException, ParseException :
+{Token bound=null, timeTotal=null, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
+String  locationName = "[";}
 {   
     [   
         LOOKAHEAD(2)
         bound = < KEYWORD_TIME >
         <ASSIGN>
         timeTotal = <DOUBLE>
+        { TemporalHorizon newTempHor = new TemporalHorizon();
+          double timeTotalValue = Double.parseDouble(timeTotal.image);
+          newTempHor.setTemporalHorizon(timeTotalValue);
+          return newTempHor;
+        }
         |
         LOOKAHEAD(2)
         bound = <  KEYWORD_POPULATION >
         <SEMICOLON>
         nameAgent = <IDENTIFIER>
+        { Population newPop = new Population();
+          newPop.setPopulationName(nameAgent.image);
+          return newPop;
+        }       
         |
         LOOKAHEAD(2)
         bound = <  KEYWORD_POPLOC >
         <SEMICOLON>
         nameAgent = <IDENTIFIER>
-        <LR>     
-        x = <INT>
+        <LR>
+	    x = <INT> { locationName += x; }
         (
         <COMMA>
-        y = <INT>
+        y = <INT> { locationName += ", "+y; }
         (
         <COMMA>
-        z = <INT>
+        z = <INT> { locationName += ", "+z; }
         )?
         )?
-        <RR>          
+        { locationName += "]";}
+        <RR>
+        { PopulationLocation newPopLoc = new PopulationLocation();
+          newPopLoc.setPopulationName(nameAgent.image);
+          newPopLoc.setLocationName(locationName);
+          return newPopLoc;
+        }              
         |   
         LOOKAHEAD(2)
         bound = <  KEYWORD_ACTION >
         <SEMICOLON>
         actionName = <IDENTIFIER>
         <ASSIGN>
-        actionValue = <INT>
+        actionCount = <INT>
+        { ActionCount acCount = new ActionCount();
+          acCount.setActionName(actionName.image);
+          int actionCountValue = Integer.parseInt(actionCount.image);
+          acCount.setCount(actionCountValue);
+          return acCount;
+        } 
         |   
         LOOKAHEAD(2)
         bound = <  KEYWORD_STEP >
         <ASSIGN>
-        actionValue = <INT>
-    ]
-    {
-      return bound;
-    }       
+        steps = <INT>
+        {
+          StepsPredicate newStepPred = new StepsPredicate();
+          int stepsValue = Integer.parseInt(steps.image);
+          newStepPred.setNumberSteps(stepsValue);
+          return newStepPred;
+        }
+    ]      
     }
     
-    
-Token BoundaryOptions() throws NumberFormatException, RuntimeException, ParseException :
-{Token name=null;}
-{   
-    [   
-        LOOKAHEAD(1)
-        name = < KEYWORD_PERIODIC >
-        |
-        LOOKAHEAD(1)
-        name = < KEYWORD_BOUNCING >
-    ]
-    {
-      return name;
-    }   
-    
-}
+   

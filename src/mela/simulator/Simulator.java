@@ -63,6 +63,9 @@ public class Simulator {
 				current = transition.apply(current);
 				t.add(transition.getInfo(),dt,current);
 				steps++;				
+				
+				//increase action count - how to deal with ActionCount here?
+				
 			} else {
 				flag = false;
 			}			

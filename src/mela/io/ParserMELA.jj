@@ -89,6 +89,10 @@ IDENTIFIERS
 <DEFAULT> TOKEN : { <KEYWORD_TWOD : "TwoD" > }
 <DEFAULT> TOKEN : { <KEYWORD_THREED : "ThreeD" > }
 
+<DEFAULT> TOKEN : { <KEYWORD_BOUNDARY : "#Boundary" > }
+<DEFAULT> TOKEN : { <KEYWORD_PERIODIC : "periodic" > }
+<DEFAULT> TOKEN : { <KEYWORD_BOUNCING : "bouncing" > }
+
 <DEFAULT> TOKEN : { <KEYWORD_LOC : "l" > }
 <DEFAULT> TOKEN : { <KEYWORD_NEIGH : "N" > }
 <DEFAULT> TOKEN : { <KEYWORD_ALL : "all" > }
@@ -158,12 +162,28 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
 }
 {   <SECTION_SPACE>
 	<SEMICOLON>
-   	lm = SpaceStructure() { m.setLocationManager(lm); }
+   	lm = SpaceStructure()
+   	{ m.setLocationManager(lm); }
     <SECTION_PARAM>
     (
       Param( parameters )
     )*  
    <SECTION_INIT>
+
+{
+
+//    not sure why this is not working - I added manually to the generated parser
+
+//    HashMap<Integer,HashMap<Integer,Integer>> alllocationMap = Init(m);
+//    BiFunction<Integer,Integer,Integer> initCond = (x, y) -> {
+//    Integer num = alllocationMap.getOrDefault( x , new HashMap<Integer,Integer>() ).getOrDefault( y , 0 );
+//    return num;};
+//    m.setBiFunction( initCond );
+
+  
+}
+   
+
    {return m; }
     <EOF>
 }
@@ -178,20 +198,20 @@ LocationManager SpaceStructure() throws NumberFormatException, RuntimeException,
 {   
     [   
         LOOKAHEAD(2)
-        < KEYWORD_GRAPH >
+        spaceKey = < KEYWORD_GRAPH >
         lm=setGraph() { return lm; }
         |
         LOOKAHEAD(2)
         spaceKey = < KEYWORD_ONED >
-        {setOneD();}
+        lm=setOneD() { return lm; }
         |
         LOOKAHEAD(2)
         spaceKey = < KEYWORD_TWOD >
-        {setTwoD();}
+        lm = setTwoD() { return lm; }
         |
         LOOKAHEAD(2)
         spaceKey = < KEYWORD_THREED >
-        {setThreeD();}
+        lm = setThreeD() { return lm; }
     ]
     {
       return lm;
@@ -208,57 +228,104 @@ LocationManager setGraph() throws NumberFormatException, RuntimeException, Parse
     < ASSIGN >
     < LBRAC >
     v = <INT>
-    { lm.createLocation(v+""); }
+    { int vValue = Integer.parseInt(v.image);
+      String name = lm.createLocationName(vValue);
+      lm.createLocation(name); }
     (
        <COMMA>
        v1 = <INT>
-    { lm.createLocation(v+""); }
+    { int v1Value = Integer.parseInt(v1.image);
+      String name1 = lm.createLocationName(v1Value);
+      lm.createLocation(name1); }
     )*
     < RBRAC >
-    < EOL >
     < EDGES >
     <ASSIGN>
     <LBRAC>
      <LBRAC>
      e = <INT>
+     {if (!(lm.locationInLocationManager("["+e+"]"))){
+    	 throw new Error("Location " +  e+"" + " is not defined.");
+     }}
      <COMMA>
      e1 = <INT>
+     {if (!(lm.locationInLocationManager("["+e1+"]"))){
+    	 throw new Error("Location " +  e1+"" + " is not defined.");
+     }}
      <RBRAC>
+     { lm.addEdge(lm.getLocation("["+e+"]"), lm.getLocation("["+e1+"]")); }
      ( 
        <COMMA>
        <LBRAC>
        e = <INT>
+       {if (!(lm.locationInLocationManager("["+e+"]"))){
+    	 throw new Error("Location " +  e+"" + " is not defined.");
+     }}
        <COMMA>
        e1 = <INT>
+      {if (!(lm.locationInLocationManager("["+e1+"]"))){
+    	 throw new Error("Location " +  e1+"" + " is not defined.");
+     }}
+       <RBRAC>
+    { lm.addEdge(lm.getLocation("["+e+"]"), lm.getLocation("["+e1+"]")); }     
        )*
      <RBRAC>
-     < EOL >
      {  return lm; }
 }
 
-void setOneD()throws NumberFormatException, RuntimeException, ParseException :
+LocationManager setOneD()throws NumberFormatException, RuntimeException, ParseException :
 {
     Token x;
+    Boolean boundaryChoice;
 }
 {   <LR>
     x = <INT>
    <RR>
+   <KEYWORD_BOUNDARY >
+   < SEMICOLON >
+   boundaryChoice = boundary()
+   {int xValue = Integer.parseInt(x.image);
+    LocationManager lm = new LocationManager();
+    return lm.buildGridOne( xValue, boundaryChoice );}
 }
 
-void setTwoD()throws NumberFormatException, RuntimeException, ParseException :
+Boolean boundary() throws NumberFormatException, RuntimeException, ParseException :
+{Token spaceKey=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        spaceKey = < KEYWORD_PERIODIC >
+        { return true; }
+        |
+        LOOKAHEAD(1)
+        spaceKey = < KEYWORD_BOUNCING >
+        { return false; }
+    ] 
+}
+
+LocationManager setTwoD()throws NumberFormatException, RuntimeException, ParseException :
 {
     Token x, y;
+    Boolean boundaryChoice;
 }
 {   <LR>
     x = <INT>
     < COMMA >
     y = < INT >
    <RR>
+   <KEYWORD_BOUNDARY >
+   < SEMICOLON >
+   boundaryChoice = boundary()
+    {int xValue = Integer.parseInt(x.image);
+    int yValue = Integer.parseInt(y.image);
+    LocationManager lm = new LocationManager();
+    return lm.buildGridTwo( xValue, yValue, boundaryChoice );}
 }
 
-void setThreeD()throws NumberFormatException, RuntimeException, ParseException :
+LocationManager setThreeD()throws NumberFormatException, RuntimeException, ParseException :
 {
     Token x, y, z;
+    Boolean boundaryChoice;
 }
 {   <LR>
     x = <INT>
@@ -267,6 +334,14 @@ void setThreeD()throws NumberFormatException, RuntimeException, ParseException :
     < COMMA >
     z = < INT >
    <RR>
+   <KEYWORD_BOUNDARY >
+   < SEMICOLON >
+   boundaryChoice = boundary()
+   {int xValue = Integer.parseInt(x.image);
+    int yValue = Integer.parseInt(y.image);
+    int zValue = Integer.parseInt(z.image);
+    LocationManager lm = new LocationManager();
+    return lm.buildGridThree( xValue, yValue, zValue, boundaryChoice);}
 }
 
 /*********
@@ -281,7 +356,13 @@ void Param( HashMap<String,Double> parameters ) throws NumberFormatException, Ru
     t1 = <IDENTIFIER>
     <ASSIGN>
     t2 = <DOUBLE> 
-    <EOL>    
+    <EOL>
+    {double value = Double.parseDouble(t2.image);
+    String name = t1.image;
+     if (parameters.containsKey(name)){
+    	 throw new Error("Parameter " +  name + " already defined.");
+     }else{
+     parameters.put( name, value ); } }
 }
 
 
@@ -291,26 +372,22 @@ INITIAL CONDITIONS
 
 
 //BiFunction<Integer,Integer,Integer>  Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
-void Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
+HashMap<Integer,HashMap<Integer,Integer>> Init( Model m ) throws NumberFormatException, RuntimeException, ParseException :
 
 {  
-HashMap<Integer,HashMap<Integer,Integer>> allocationMap = new HashMap<Integer,HashMap<Integer,Integer>>();
+HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,HashMap<Integer,Integer>>();
 }
 {  
-    InitAgent(m, allocationMap ) 
+    InitAgent(m, allLocationMap ) 
     (
         <PARALLEL> 
-        InitAgent(m, allocationMap ) 
+        InitAgent(m, allLocationMap ) 
     )*
-//{
-//
-//  
-//  BiFunction<Integer,Integer,Integer> initCond = (x, y) -> {
-//			Integer num = allocationMap.getOrDefault( x , new HashMap<Integer,Integer>() ).getOrDefault( y , 0 );
-//			return num;
-//		};
-//		return initCond;
-//}
+{
+
+  
+  return allLocationMap;
+}
   
 }    
 
@@ -319,7 +396,7 @@ void InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMa
 {    
    int agentIndex = 0;
    int locationIndex = 0;
-   String locationName = "";
+   String locationName = "[";
    Token t, x, y, z, n;
 }
 {
@@ -329,13 +406,20 @@ void InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMa
     x = <INT> { locationName += x; }
     (
        <COMMA>
-    y = <INT> { locationName += ","+y; }
+    y = <INT> { locationName += ", "+y; }
     (
        <COMMA>
-    z = <INT> { locationName += ","+z; }
+    z = <INT> { locationName += ", "+z; }
     )?
-    )?    
-    <RR> { locationIndex = m.getLocationManager().getLocationIndex(locationName); }
+    )?   
+    <RR>
+    { locationName += "]";
+      if (m.getLocationManager().getLocationIndex(locationName) != -1){
+    	  locationIndex = m.getLocationManager().getLocationIndex(locationName);
+      }else{
+    	  throw new Error("Location  " +  locationName + " does not exist."); 
+      };
+      locationIndex = m.getLocationManager().getLocationIndex(locationName); }
     )?
     <LSQ>
     n = <INT>

@@ -71,8 +71,8 @@ public class TestLocationManager {
 			for (int j1=0 ; j1<height ; j1++ ) {
 				for( int i2=0 ; i2<width ; i2++ ) {					
 					for( int j2=0 ; j2<height ; j2++ ) {
-						String l1 = LocationManager.locationName(i1, j1);
-						String l2 = LocationManager.locationName(i2, j2);
+						String l1 = LocationManager.createLocationName(i1, j1);
+						String l2 = LocationManager.createLocationName(i2, j2);
 						assertEquals( 
 							l1+"->"+l2 ,
 							((Math.abs(i1-i2)==1)&&(j1==j2))||((i1==i2)&&(Math.abs(j1-j2)==1)) , 

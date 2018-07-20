@@ -38,6 +38,12 @@ public class AgentManager {
 	public int size() {
 		return agents.size();
 	}
+	
+	public int agentIndex (String name){
+		Agent toCheck = directory.get(name);
+		int index = agents.indexOf(toCheck);
+		return index;
+	}
 
 	/**
 	 * @param a: index agent
