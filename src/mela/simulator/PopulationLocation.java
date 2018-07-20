@@ -13,10 +13,11 @@ public class PopulationLocation implements StoppingPredicate {
 
 	private String agentName;
 	private String locationName;
+	private double timeBound;
 	
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = agentExist(agentName, locationName, s);
+		boolean toReturn = (agentExist(agentName, locationName, s) || (timeBoundOver(time)));
 		return toReturn;
 		
 	}
@@ -41,5 +42,15 @@ public class PopulationLocation implements StoppingPredicate {
 	public void setLocationName(String name){
 		this.locationName = name;
 	}
+	
+	public void setTimeBound(double time){
+		this.timeBound = time;
+	}
+	
+	public boolean timeBoundOver (double timeToCheck){
+		boolean check = timeToCheck < timeBound;
+		return check;
+	}
+	
 }
 

@@ -37,41 +37,43 @@ public interface MELAParametersConstants {
   /** RegularExpression Id. */
   int KEYWORD_STEP = 19;
   /** RegularExpression Id. */
-  int KEYWORD_TOTAL = 20;
+  int KEYWORD_TIMEBOUND = 20;
   /** RegularExpression Id. */
-  int KEYWORD_COUNT = 21;
+  int KEYWORD_TOTAL = 21;
   /** RegularExpression Id. */
-  int SEMICOLON = 22;
+  int KEYWORD_COUNT = 22;
   /** RegularExpression Id. */
-  int ASSIGN = 23;
+  int SEMICOLON = 23;
   /** RegularExpression Id. */
-  int COMMA = 24;
+  int ASSIGN = 24;
   /** RegularExpression Id. */
-  int LR = 25;
+  int COMMA = 25;
   /** RegularExpression Id. */
-  int RR = 26;
+  int LR = 26;
   /** RegularExpression Id. */
-  int INT = 27;
+  int RR = 27;
   /** RegularExpression Id. */
-  int DOUBLE = 28;
+  int INT = 28;
   /** RegularExpression Id. */
-  int IDENTIFIER = 29;
+  int DOUBLE = 29;
   /** RegularExpression Id. */
-  int MATH_EXPR = 30;
+  int IDENTIFIER = 30;
   /** RegularExpression Id. */
-  int SPACE = 31;
+  int MATH_EXPR = 31;
   /** RegularExpression Id. */
-  int M_AND = 32;
+  int SPACE = 32;
   /** RegularExpression Id. */
-  int M_OR = 33;
+  int M_AND = 33;
   /** RegularExpression Id. */
-  int M_LINER = 34;
+  int M_OR = 34;
   /** RegularExpression Id. */
-  int M_LINEN = 35;
+  int M_LINER = 35;
   /** RegularExpression Id. */
-  int SYMBOL = 36;
+  int M_LINEN = 36;
   /** RegularExpression Id. */
-  int PARAM_SYMBOL = 37;
+  int SYMBOL = 37;
+  /** RegularExpression Id. */
+  int PARAM_SYMBOL = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -104,6 +106,7 @@ public interface MELAParametersConstants {
     "\"#Pop_Loc\"",
     "\"#ActionCount\"",
     "\"#Steps\"",
+    "\"#Time bound\"",
     "\"#Total population\"",
     "\"#Action\"",
     "\":\"",

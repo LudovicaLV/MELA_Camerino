@@ -99,7 +99,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
   }
 
   final public StoppingPredicate StopChoice() throws ParseException, NumberFormatException, RuntimeException, ParseException {
- Token bound=null, timeTotal=null, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
+ Token bound=null, timeTotal=null, timeBound, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
 String  locationName = "[";
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case KEYWORD_TIME:
@@ -109,7 +109,7 @@ String  locationName = "[";
     case KEYWORD_STEP:
       if (jj_2_1(2)) {
         bound = jj_consume_token(KEYWORD_TIME);
-        jj_consume_token(ASSIGN);
+        jj_consume_token(SEMICOLON);
         timeTotal = jj_consume_token(DOUBLE);
           TemporalHorizon newTempHor = new TemporalHorizon();
           double timeTotalValue = Double.parseDouble(timeTotal.image);
@@ -119,8 +119,13 @@ String  locationName = "[";
         bound = jj_consume_token(KEYWORD_POPULATION);
         jj_consume_token(SEMICOLON);
         nameAgent = jj_consume_token(IDENTIFIER);
+        jj_consume_token(KEYWORD_TIMEBOUND);
+        jj_consume_token(ASSIGN);
+        timeBound = jj_consume_token(DOUBLE);
           Population newPop = new Population();
           newPop.setPopulationName(nameAgent.image);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          newPop.setTimeBound(timeBoundValue);
           {if (true) return newPop;}
       } else if (jj_2_3(2)) {
         bound = jj_consume_token(KEYWORD_POPLOC);
@@ -151,9 +156,14 @@ String  locationName = "[";
         }
           locationName += "]";
         jj_consume_token(RR);
+        jj_consume_token(KEYWORD_TIMEBOUND);
+        jj_consume_token(ASSIGN);
+        timeBound = jj_consume_token(DOUBLE);
           PopulationLocation newPopLoc = new PopulationLocation();
           newPopLoc.setPopulationName(nameAgent.image);
           newPopLoc.setLocationName(locationName);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          newPopLoc.setTimeBound(timeBoundValue);
           {if (true) return newPopLoc;}
       } else if (jj_2_4(2)) {
         bound = jj_consume_token(KEYWORD_ACTION);
@@ -161,18 +171,28 @@ String  locationName = "[";
         actionName = jj_consume_token(IDENTIFIER);
         jj_consume_token(ASSIGN);
         actionCount = jj_consume_token(INT);
+        jj_consume_token(KEYWORD_TIMEBOUND);
+        jj_consume_token(ASSIGN);
+        timeBound = jj_consume_token(DOUBLE);
           ActionCount acCount = new ActionCount();
           acCount.setActionName(actionName.image);
           int actionCountValue = Integer.parseInt(actionCount.image);
           acCount.setCount(actionCountValue);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          acCount.setTimeBound(timeBoundValue);
           {if (true) return acCount;}
       } else if (jj_2_5(2)) {
         bound = jj_consume_token(KEYWORD_STEP);
         jj_consume_token(ASSIGN);
         steps = jj_consume_token(INT);
+        jj_consume_token(KEYWORD_TIMEBOUND);
+        jj_consume_token(ASSIGN);
+        timeBound = jj_consume_token(DOUBLE);
           StepsPredicate newStepPred = new StepsPredicate();
           int stepsValue = Integer.parseInt(steps.image);
           newStepPred.setNumberSteps(stepsValue);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          newStepPred.setTimeBound(timeBoundValue);
           {if (true) return newStepPred;}
       } else {
         jj_consume_token(-1);
@@ -221,9 +241,9 @@ String  locationName = "[";
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3_1() {
-    if (jj_scan_token(KEYWORD_TIME)) return true;
-    if (jj_scan_token(ASSIGN)) return true;
+  private boolean jj_3_4() {
+    if (jj_scan_token(KEYWORD_ACTION)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }
 
@@ -233,20 +253,20 @@ String  locationName = "[";
     return false;
   }
 
-  private boolean jj_3_2() {
-    if (jj_scan_token(KEYWORD_POPULATION)) return true;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_scan_token(KEYWORD_ACTION)) return true;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
   private boolean jj_3_3() {
     if (jj_scan_token(KEYWORD_POPLOC)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(KEYWORD_TIME)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(KEYWORD_POPULATION)) return true;
     if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }
@@ -270,7 +290,7 @@ String  locationName = "[";
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x1000000,0x100000,0x1000000,0x40000,0x1000000,0x1000000,0xf8000,};
+      jj_la1_0 = new int[] {0x2000000,0x200000,0x2000000,0x40000,0x2000000,0x2000000,0xf8000,};
    }
    private static void jj_la1_init_1() {
       jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
@@ -459,7 +479,7 @@ String  locationName = "[";
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[38];
+    boolean[] la1tokens = new boolean[39];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -476,7 +496,7 @@ String  locationName = "[";
         }
       }
     }
-    for (int i = 0; i < 38; i++) {
+    for (int i = 0; i < 39; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

@@ -84,6 +84,8 @@ IDENTIFIERS
 <DEFAULT> TOKEN : { <KEYWORD_ACTION : "#ActionCount" > }
 <DEFAULT> TOKEN : { <KEYWORD_STEP : "#Steps" > }
 
+<DEFAULT> TOKEN : { <KEYWORD_TIMEBOUND : "#Time bound" > }
+
 <DEFAULT> TOKEN : { <KEYWORD_TOTAL : "#Total population" > }
 <DEFAULT> TOKEN : { <KEYWORD_COUNT : "#Action" > }
 
@@ -159,13 +161,13 @@ ArrayList<String > nameActions = new ArrayList< String >();
 }
 
 StoppingPredicate StopChoice() throws NumberFormatException, RuntimeException, ParseException :
-{Token bound=null, timeTotal=null, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
+{Token bound=null, timeTotal=null, timeBound, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
 String  locationName = "[";}
 {   
     [   
         LOOKAHEAD(2)
         bound = < KEYWORD_TIME >
-        <ASSIGN>
+         <SEMICOLON>
         timeTotal = <DOUBLE>
         { TemporalHorizon newTempHor = new TemporalHorizon();
           double timeTotalValue = Double.parseDouble(timeTotal.image);
@@ -177,8 +179,13 @@ String  locationName = "[";}
         bound = <  KEYWORD_POPULATION >
         <SEMICOLON>
         nameAgent = <IDENTIFIER>
+        <KEYWORD_TIMEBOUND>
+        <ASSIGN>
+        timeBound = <DOUBLE>
         { Population newPop = new Population();
           newPop.setPopulationName(nameAgent.image);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          newPop.setTimeBound(timeBoundValue);
           return newPop;
         }       
         |
@@ -198,9 +205,14 @@ String  locationName = "[";}
         )?
         { locationName += "]";}
         <RR>
+        <KEYWORD_TIMEBOUND>
+        <ASSIGN>
+        timeBound = <DOUBLE>
         { PopulationLocation newPopLoc = new PopulationLocation();
           newPopLoc.setPopulationName(nameAgent.image);
           newPopLoc.setLocationName(locationName);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          newPopLoc.setTimeBound(timeBoundValue);
           return newPopLoc;
         }              
         |   
@@ -210,10 +222,15 @@ String  locationName = "[";}
         actionName = <IDENTIFIER>
         <ASSIGN>
         actionCount = <INT>
+        <KEYWORD_TIMEBOUND>
+        <ASSIGN>
+        timeBound = <DOUBLE>
         { ActionCount acCount = new ActionCount();
           acCount.setActionName(actionName.image);
           int actionCountValue = Integer.parseInt(actionCount.image);
           acCount.setCount(actionCountValue);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          acCount.setTimeBound(timeBoundValue);
           return acCount;
         } 
         |   
@@ -221,10 +238,15 @@ String  locationName = "[";}
         bound = <  KEYWORD_STEP >
         <ASSIGN>
         steps = <INT>
+        <KEYWORD_TIMEBOUND>
+        <ASSIGN>
+        timeBound = <DOUBLE>
         {
           StepsPredicate newStepPred = new StepsPredicate();
           int stepsValue = Integer.parseInt(steps.image);
           newStepPred.setNumberSteps(stepsValue);
+          double timeBoundValue = Double.parseDouble(timeBound.image);
+          newStepPred.setTimeBound(timeBoundValue);
           return newStepPred;
         }
     ]      

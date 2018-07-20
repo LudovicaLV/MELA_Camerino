@@ -2,11 +2,13 @@
 
 #Stopping Predicate
 
-#Time : time = 10.0
+#Time : 10.0
 #Population: S
 #Pop_Loc : S(0,0)
 #ActionCount : contact = 10
 #Steps = 100
+
+#Time bound = 100.0
 
 
 #Total population: S, I

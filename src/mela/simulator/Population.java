@@ -12,9 +12,10 @@ import mela.model.State;
 public class Population implements StoppingPredicate {
 	
 	private String agentName;
+	private double timeBound;
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = agentExist(agentName, s);
+		boolean toReturn = ( agentExist(agentName, s) || (timeBoundOver(time)));
 		return toReturn;
 		
 	}
@@ -34,6 +35,16 @@ public class Population implements StoppingPredicate {
 	public void setPopulationName(String name){
 		this.agentName = name;
 	}
+	
+	public void setTimeBound(double time){
+		this.timeBound = time;
+	}
+	
+	public boolean timeBoundOver (double timeToCheck){
+		boolean check = timeToCheck < timeBound;
+		return check;
+	}
+	
 
 }
 

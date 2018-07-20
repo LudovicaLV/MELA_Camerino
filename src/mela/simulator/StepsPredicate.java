@@ -12,10 +12,11 @@ import mela.model.State;
 public class StepsPredicate implements StoppingPredicate {
 	
 	private int numberSteps;
+	private double timeBound;
 
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = (steps < numberSteps);
+		boolean toReturn = ((steps < numberSteps)	|| (timeBoundOver(time)));
 		return toReturn;
 		
 	}
@@ -23,5 +24,17 @@ public class StepsPredicate implements StoppingPredicate {
 	public void setNumberSteps(int numSteps){
 		this.numberSteps = numSteps;
 	}
+	
+	public void setTimeBound(double time){
+		this.timeBound = time;
+	}
+	
+	public boolean timeBoundOver (double timeToCheck){
+		boolean check = timeToCheck < timeBound;
+		return check;
+	}
+	
+
+
 
 }

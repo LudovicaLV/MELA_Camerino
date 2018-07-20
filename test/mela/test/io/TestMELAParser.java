@@ -26,7 +26,7 @@ public class TestMELAParser {
 	@Test
 	public void testParser() throws ParseException {
 		 MELAparser ParserMELA= new MELAparser();
-		 String filename = "/Users/ludovicaluisavissat/workspacejSSTL/MELA_Camerino/src/mela/io/SIR.mela";
+		 String filename = "./Models/SIR.mela";
 		 m = ParserMELA.parseFromFile(filename);	
 		 //number of locations
 		 int s = m.getLocationManager().size();	
