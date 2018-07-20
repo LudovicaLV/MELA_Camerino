@@ -418,6 +418,10 @@ void InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMa
     )?   
     <RR>
     { locationName += "]";
+      if (locationName == "[]") {
+         //environment agent - choose the index in the matrix: 0?
+         locationIndex = 0;
+      }
       if (m.getLocationManager().getLocationIndex(locationName) != -1){
     	  locationIndex = m.getLocationManager().getLocationIndex(locationName);
       }else{

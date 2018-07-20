@@ -57,12 +57,13 @@ MODEL STRUCTURE
       Param(parameters);
     }
     jj_consume_token(SECTION_INIT);
-
+    
   HashMap<Integer,HashMap<Integer,Integer>> alllocationMap = Init(m);
   BiFunction<Integer,Integer,Integer> initCond = (x, y) -> {
   Integer num = alllocationMap.getOrDefault( x , new HashMap<Integer,Integer>() ).getOrDefault( y , 0 );
   return num;};
   m.setBiFunction( initCond );
+
 
     {if (true) return m;}
     jj_consume_token(0);
@@ -337,6 +338,10 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
       }
       jj_consume_token(RR);
       locationName += "]";
+      if (locationName == "[]") {
+         //environment agent - choose the index in the matrix: 0?
+         locationIndex = 0;
+      }
       if (m.getLocationManager().getLocationIndex(locationName) != -1){
           locationIndex = m.getLocationManager().getLocationIndex(locationName);
       }else{
