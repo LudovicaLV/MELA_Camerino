@@ -6,7 +6,11 @@ PARSER_BEGIN(MELAParameters)
 
 package mela.io;
 
+import java.util.ArrayList;
+
 import mela.simulator.ActionCount;
+import mela.simulator.DataAction;
+import mela.simulator.DataPopulation;
 import mela.simulator.Parameters;
 import mela.simulator.Population;
 import mela.simulator.PopulationLocation;
@@ -115,6 +119,8 @@ void Input() throws NumberFormatException, RuntimeException, ParseException :
 Parameters modelParam = new Parameters();
 StoppingPredicate stoppingPredicate;
 Token population, population2, action, action2, runs;
+ArrayList<String > nameAgents = new ArrayList< String >();
+ArrayList<String > nameActions = new ArrayList< String >();
 }
 {   
     <KEYWORD_RUN>
@@ -129,15 +135,25 @@ Token population, population2, action, action2, runs;
     <KEYWORD_TOTAL>
     <ASSIGN>
     population = <IDENTIFIER>
+    {nameAgents.add(population.image); }
     (<COMMA>
-    population2 = <IDENTIFIER>)*)?
+    population2 = <IDENTIFIER>
+    {nameAgents.add(population2.image); })*
+    { DataPopulation dataPop = new DataPopulation();
+    dataPop.setNames(nameAgents); }
+    )?
     
     (
     <KEYWORD_ACTION>
     <ASSIGN>
     action = <IDENTIFIER>
+    {nameActions.add(action.image); }
     (<COMMA>
-    action2 = <IDENTIFIER>)*)?
+    action2 = <IDENTIFIER>
+    {nameActions.add(action2.image); })*
+    { DataAction dataAc = new DataAction();
+      dataAc.setNames(nameActions);
+      })?
     
     <EOF>
 }

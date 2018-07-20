@@ -8,7 +8,6 @@
 #ActionCount : contact = 10
 #Steps = 100
 
-#Boundary: bouncing / periodic 
 
 #Total population: S, I
 
