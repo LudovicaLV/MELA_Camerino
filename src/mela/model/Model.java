@@ -30,8 +30,14 @@ public class Model {
 		this.locationManager = locationManager;
 	}
 	
-	public void setBiFunction(BiFunction<Integer,Integer,Integer> agentLocationFunction){
+	public void setAgentLocationFunction(BiFunction<Integer,Integer,Integer> agentLocationFunction){
 		this.agentLocationFunction = agentLocationFunction;
+	}
+	
+	public void setAgentLocationFunction( HashMap<Integer,HashMap<Integer,Integer>> initialTable ) {
+		this.setAgentLocationFunction( (x,y) -> 
+			initialTable.getOrDefault(x,new HashMap<Integer,Integer>()).getOrDefault(y,0)
+		);
 	}
 	
 	/**
@@ -84,4 +90,5 @@ public class Model {
 	public BiFunction<Integer,Integer,Integer> getInitCond() {
 		return agentLocationFunction;
 	}
+	
 }
