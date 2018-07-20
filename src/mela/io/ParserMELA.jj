@@ -6,6 +6,7 @@ PARSER_BEGIN(MELAparser)
 
 package mela.io;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.BiFunction;
 import mela.model.LocationManager;
@@ -159,6 +160,9 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
     Model m = new Model();    
     LocationManager lm;
     HashMap<String,Double> parameters = new HashMap<String,Double>();
+    ArrayList<StoreInfluence> infToStore = new ArrayList<StoreInfluence >();
+    ArrayList<StorePassive> passToStore = new ArrayList<StorePassive >();
+    ArrayList<StoreEnvironment> envToStore = new ArrayList<StoreEnvironment >();
 }
 {   <SECTION_SPACE>
 	<SEMICOLON>
