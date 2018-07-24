@@ -32,6 +32,7 @@ public class AgentManager {
     	}
     	Agent agent = new Agent( agents.size(), name);
     	directory.put(name, agent);
+    	agents.add(agent);
     	return agent;
     }    
 

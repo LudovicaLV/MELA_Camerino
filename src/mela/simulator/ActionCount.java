@@ -17,7 +17,9 @@ public class ActionCount implements StoppingPredicate{
 		
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = ((Simulator.count(nameAction) < count) 	|| (timeBoundOver(time)));
+		//boolean toReturn = ((Simulator.count(nameAction) < count) 	|| (timeBoundOver(time)));
+		//TODO fix this
+		boolean toReturn = false;
 		return toReturn;
 		
 	}

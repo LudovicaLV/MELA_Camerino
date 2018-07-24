@@ -44,17 +44,24 @@ public class TestMELAParser {
 		 //to check initial condition
 		 int num = m.getInitCond().apply(0, 0);
 		 assertEquals(num, 5);
-		 
-		 
-	}
 	
 	//test for parameters
+    //TODO SOMETHING WRONG with the hashmap!
 //    for (String name : parameters.keySet()){
 //    	System.out.println(name + " has this value " + parameters.get(name));
 //    }
 	
 	
+	      int t = m.getAgentManager().size();
+	      assertEquals(t,1);
+	      
+	  	//test for parameters
+//	    for (String name : allActionInfo.keySet()){
+//	    	System.out.println(name + " has this value " + allActionInfo.get(name).getRateName());
+//	    }
+
+	      
 	
     
-
+	}
 }

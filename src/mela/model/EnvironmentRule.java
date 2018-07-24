@@ -3,6 +3,7 @@
  */
 package mela.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,6 +64,20 @@ public class EnvironmentRule implements Rule {
 		}
 		return toReturn;
 	}
+	
+	
+	public static Predicate<Integer> createPredicate( ArrayList<Integer> locations ) {
+		return l -> locations.contains(l);
+	}
+	
+	public static Predicate<Integer> allPredicate( ) {
+		return l -> true;
+	}
+	
+
+
+
+
 
 
 }

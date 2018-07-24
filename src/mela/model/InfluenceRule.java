@@ -3,6 +3,7 @@
  */
 package mela.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;

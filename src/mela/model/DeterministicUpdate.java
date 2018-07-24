@@ -3,6 +3,7 @@
  */
 package mela.model;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,10 +13,10 @@ import java.util.List;
  */
 public class DeterministicUpdate implements Update {
 	
-	private final int[] nextAgents;
+	private final ArrayList<Integer> nextAgents;
 	private final int src;
 	
-	public DeterministicUpdate( int src , int ... nextAgents ) {
+	public DeterministicUpdate( int src , ArrayList<Integer> nextAgents ) {
 		this.src = src;
 		this.nextAgents= nextAgents;
 	}

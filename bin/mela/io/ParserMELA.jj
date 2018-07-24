@@ -6,11 +6,23 @@ PARSER_BEGIN(MELAparser)
 
 package mela.io;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import mela.io.AllActionInfo;
+import mela.model.AgentManager;
+import mela.model.AgentStep;
 import mela.model.LocationManager;
 import mela.model.Model;
-
+import mela.model.MovementUpdate;
+import mela.model.NoInfluenceRule;
+import mela.model.DeterministicUpdate;
+import mela.model.EnvironmentRule;
+import mela.model.InfluenceRule;
+import mela.model.Update;
+import mela.model.Agent;
 
 public class MELAparser {
        
@@ -158,7 +170,9 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
 {
     Model m = new Model();    
     LocationManager lm;
+    AgentManager am;
     HashMap<String,Double> parameters = new HashMap<String,Double>();
+    HashMap<String,AllActionInfo> allActionInfo = new HashMap<String,AllActionInfo>();
 }
 {   <SECTION_SPACE>
 	<SEMICOLON>
@@ -167,13 +181,65 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
     <SECTION_PARAM>
     (
       Param( parameters )
-    )*  
-   <SECTION_INIT>
+    )*
+    <SECTION_AGENTS>
+    am = Agent(allActionInfo, lm)
+    { m.setAgentManager(am); }   
+    (
+	  Agent(allActionInfo, lm)     
+    )*
+    (<SECTION_ENV>  
+	  EnvAgent(allActionInfo, am, lm)     
+    )?
+    <SECTION_INIT>
     {
      HashMap<Integer,HashMap<Integer,Integer>> alllocationMap = Init(m);
      m.setAgentLocationFunction( alllocationMap );  
      }
-    {return m; }
+    {//building the rules
+    //get the type, build the rule dependent on that
+    for (String nameAction : allActionInfo.keySet()) {
+        String type = allActionInfo.get(nameAction).getType();
+    if (type == "no-inf") {
+       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
+       String agentName = allActionInfo.get(nameAction).getAgentPerformingActive();
+       int agentIndex = am.agentIndex(agentName);
+       double rate = parameters.get(allActionInfo.get(nameAction).getRateName());
+       Update update = allActionInfo.get(nameAction).getUpdateActive();
+       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
+       am.directory.get(agentName).addRule(newNoInf);  
+    }else if (type == "inf") {
+       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
+       String rateName = allActionInfo.get(nameAction).getRateName();
+       double rate = parameters.get(rateName);
+       String agentName = allActionInfo.get(nameAction).getAgentPerformingActive();
+       int agentIndex = am.agentIndex(agentName);
+       Update updateActive = allActionInfo.get(nameAction).getUpdateActive();
+       AgentStep activeStep = new AgentStep(agentIndex, updateActive);
+       BiFunction<Integer,LocationManager,List<Integer>> influenceFunction = allActionInfo.get(nameAction).getInfSet();
+       String passAgentName = allActionInfo.get(nameAction).getAgentPerformingPassive();
+       int agentIndexPass = am.agentIndex(passAgentName);
+       Update updatePassive = allActionInfo.get(nameAction).getUpdatePassive();
+       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
+       String passProbName = allActionInfo.get(nameAction).getProbName();
+       double passProb = parameters.get(passProbName);
+       InfluenceRule newInf = new InfluenceRule(info, rate, activeStep, influenceFunction, passiveStep, passProb);
+       am.directory.get(agentName).addRule(newInf);  
+    }else if (type == "env") {
+       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
+       String passAgentName = allActionInfo.get(nameAction).getAgentPerformingPassive();
+       int agentIndexPass = am.agentIndex(passAgentName);
+       Update updatePassive = allActionInfo.get(nameAction).getUpdatePassive();
+       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
+       String rateName = allActionInfo.get(nameAction).getRateName();
+       double rate = parameters.get(rateName);
+       Predicate<Integer> environmentSet =  allActionInfo.get(nameAction).getEnvPredicate();
+       String passProbName = allActionInfo.get(nameAction).getProbName();
+       double passProb = parameters.get(passProbName);
+       EnvironmentRule newEnv = new EnvironmentRule(info, agentIndexPass, passiveStep, rate, environmentSet, passProb);
+       am.directory.get(passAgentName).addRule(newEnv);  
+    }}
+     return m; }
      <EOF>
 }
 
@@ -182,7 +248,7 @@ SPACE
 *********/
 
 LocationManager SpaceStructure() throws NumberFormatException, RuntimeException, ParseException :
-{Token spaceKey=null;
+{Token spaceKey=null; 
  LocationManager lm = new LocationManager();}
 {   
     [   
@@ -353,6 +419,379 @@ void Param( HashMap<String,Double> parameters ) throws NumberFormatException, Ru
      }else{
      parameters.put( name, value ); } }
 }
+
+/*********
+AGENTS
+*********/
+
+AgentManager Agent(HashMap<String,AllActionInfo> allActionInfo, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token t;
+    AgentManager am = new AgentManager();
+    Agent agent;
+}
+{
+    t = <IDENTIFIER>
+    (<LR>
+    <KEYWORD_LOC>
+    <RR>
+     )?
+     {agent = am.addAgent(t.image);}
+    <DEFINE>
+    actionToStore(agent, allActionInfo, am, lm) 
+    (
+        <PLUS> 
+        actionToStore(agent, allActionInfo, am, lm) 
+    )* 
+    <EOL>
+    { return am ;}
+}
+
+void actionToStore(Agent agent, HashMap<String,AllActionInfo> allActionInfo,  AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{}
+{   
+    [   
+        LOOKAHEAD(2)
+        StoreNoInfAction(agent, allActionInfo, am, lm)
+        |
+        LOOKAHEAD(2)
+        StoreInfAction(agent, allActionInfo, am, lm)
+        |
+        LOOKAHEAD(2)
+        StorePassAction(agent, allActionInfo, am, lm)
+    ]
+}
+
+
+void StoreNoInfAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{
+ArrayList<Integer > updateArray = new ArrayList<Integer >();
+Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
+}
+{
+    <LR>
+    name = <IDENTIFIER>
+    {AllActionInfo newNoInf = new AllActionInfo();
+     String nameAction = name.image; 
+     newNoInf.setAgentPerformingActive(agent.getName());
+    }
+    <COMMA>
+    rateNameToken = <IDENTIFIER>
+    {String rateName = rateNameToken.image; 
+     newNoInf.setType("no-inf");
+     newNoInf.setRateName(rateName); }
+    <RR>
+    symbol = MelaSymbol()    
+    update = <IDENTIFIER>
+    <LR>
+    updateloc = UpdateLoc()
+     <RR>
+    ( <PARALLEL>
+      update2 = <IDENTIFIER>
+      <LR>
+      updateloc2 = UpdateLoc()
+      <RR>
+      { updateArray.add(am.agentIndex(update2.image)); } 
+      )?
+   {int agentIndex = am.agentIndex(agent.getName());
+    if (symbol.image == "|>") {
+    MovementUpdate newMove = new MovementUpdate(agentIndex);
+    newNoInf.setUpdateActive(newMove);
+    allActionInfo.put(name.image, newNoInf);}
+    else{
+    updateArray.add(am.agentIndex(update.image));  
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newNoInf.setUpdateActive(newDet);
+    allActionInfo.put(name.image, newNoInf);}   
+}
+}
+
+Token MelaSymbol() throws NumberFormatException, RuntimeException, ParseException :
+{Token symbol = null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        symbol = < DOT >
+        |
+        LOOKAHEAD(1)
+        symbol = <  UP >
+        |
+        LOOKAHEAD(1)
+        symbol = <  DOWN >
+        |
+        LOOKAHEAD(1)
+        symbol = <  TRIANGLE >
+    ]
+    {
+      return symbol;
+    }   
+}
+
+Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException :
+{Token update=null;}
+{   
+    [   
+        LOOKAHEAD(1)
+        update = < KEYWORD_LOC >
+        |
+        LOOKAHEAD(1)
+        update = <  IDENTIFIER >
+    ]
+    { 
+    return update;
+    }   
+}
+
+void StoreInfAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{
+ArrayList<Integer > updateArray = new ArrayList<Integer >();
+Token rangeNeigh=null, name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
+String infset;
+int rangeNeighValue = 0;
+}
+{
+    <DASH>
+    <RANG>
+    < LBRAC >
+    infset =  InfSet(allActionInfo)
+    (<LR>
+    rangeNeigh = < INT >
+    <RR>
+    {rangeNeighValue = Integer.parseInt(rangeNeigh.image);
+     infset = "neigh";})? 
+    < RBRAC >
+    <LR>    
+    name = <IDENTIFIER>
+    {String nameAction = name.image; 
+     AllActionInfo newInf = new AllActionInfo();
+     if (allActionInfo.containsKey(nameAction)) {
+     newInf = allActionInfo.get(nameAction);}
+     newInf.setAgentPerformingActive(agent.getName());
+    if (infset=="local") {
+    newInf.setInfSetLocal();
+    }else if (infset=="neigh") {
+    newInf.setInfSetNeigh(rangeNeighValue);
+    } else if(infset == "all") {
+    newInf.setInfSetAll();
+    }    
+    }
+    <COMMA>
+    rateNameToken = <IDENTIFIER>
+    {String rateName = rateNameToken.image; 
+     newInf.setType("inf");
+     newInf.setRateName(rateName); }
+    <RR>
+    symbol = MelaSymbol()    
+    update = <IDENTIFIER>
+    <LR>
+    updateloc = UpdateLoc()
+     <RR>
+    ( <PARALLEL>
+      update2 = <IDENTIFIER>
+      <LR>
+      updateloc2 = UpdateLoc()
+      <RR>
+      { updateArray.add(am.agentIndex(update2.image)); } 
+      )?
+   {int agentIndex = am.agentIndex(agent.getName());
+    if (symbol.image == "|>") {
+    MovementUpdate newMove = new MovementUpdate(agentIndex);
+    newInf.setUpdateActive(newMove);}
+    else{
+    updateArray.add(am.agentIndex(update.image));  
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newInf.setUpdateActive(newDet);}   
+   }
+}
+
+String InfSet(HashMap<String, AllActionInfo> allActionInfo) throws NumberFormatException, RuntimeException, ParseException :
+{ Token toRead = null;
+   String set = "";}
+{   
+    [   
+        LOOKAHEAD(1)
+        toRead = < KEYWORD_LOC >
+        {set = "local";}
+        |
+        LOOKAHEAD(1)
+        toRead = <  KEYWORD_NEIGH >
+        |
+        LOOKAHEAD(1)
+        toRead = <  KEYWORD_ALL >
+        {set = "all";}
+    ]
+    {
+      return set;
+    }   
+}
+
+void StorePassAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{
+ArrayList<Integer > updateArray = new ArrayList<Integer >();
+Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updatelocPass=null, updatePass2=null, updatelocPass2=null; 
+}
+{
+    <LANG>
+    <DASH>
+    <LR>
+    name = <IDENTIFIER>
+    {String nameAction = name.image;
+     AllActionInfo newInf = new AllActionInfo();
+     if (allActionInfo.containsKey(nameAction)) {
+     newInf = allActionInfo.get(nameAction);}  
+     newInf.setAgentPerformingPassive(agent.getName());
+    }
+    <COMMA>
+    probNameToken = <IDENTIFIER>
+    {String probName = probNameToken.image; 
+    newInf.setProbName(probName); }
+    <RR>
+    symbolPass = MelaSymbol() 
+    updatePass = <IDENTIFIER>
+    <LR>
+    updatelocPass = UpdateLoc()
+    <RR>
+    ( <PARALLEL>
+      updatePass2 = <IDENTIFIER>
+      <LR>
+      updatelocPass2 = UpdateLoc()
+      <RR>
+      { updateArray.add(am.agentIndex(updatePass2.image)); } 
+      )?
+   {int agentIndex = am.agentIndex(agent.getName());
+    if (symbolPass.image == "|>") {
+    MovementUpdate newMove = new MovementUpdate(agentIndex);
+    newInf.setUpdatePassive(newMove);}
+    else{
+    updateArray.add(am.agentIndex(updatePass.image));  
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newInf.setUpdatePassive(newDet);}   
+}
+}
+
+void EnvAgent(HashMap<String,AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{
+    Token t;
+    Agent agent;
+}
+{
+    t = <IDENTIFIER>
+    <DEFINE>
+    {agent = am.addAgent(t.image);}
+    StoreEnvAction(agent, allActionInfo, am, lm) 
+    (
+        <PLUS> 
+        StoreEnvAction(agent, allActionInfo, am, lm) 
+    )* 
+    <EOL>
+}
+
+void StoreEnvAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{
+ArrayList<Integer > updateArray = new ArrayList<Integer >();
+Token rangeNeigh=null, name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
+Predicate<Integer> envset;
+}
+{
+    <DASH>
+    <RANG>
+    < LBRAC >
+    envset =  envSet(allActionInfo, lm)
+    < RBRAC >
+    <LR>    
+    name = <IDENTIFIER>
+    {String nameAction = name.image; 
+     AllActionInfo newEnv = new AllActionInfo();
+     if (allActionInfo.containsKey(nameAction)) {
+     newEnv = allActionInfo.get(nameAction);}
+     newEnv.setAgentPerformingActive(agent.getName());  
+     newEnv.setEnvPredicate(envset);   
+    }
+    <COMMA>
+    rateNameToken = <IDENTIFIER>
+    {String rateName = rateNameToken.image; 
+     newEnv.setType("env");
+     newEnv.setRateName(rateName); }
+    <RR>
+    symbol = MelaSymbol()    
+    update = <IDENTIFIER>
+    // no update for the environment (add a method to check that the same name is declared) 
+   
+}
+
+Predicate<Integer> envSet (HashMap<String, AllActionInfo> allActionInfo, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{ Token toRead = null;
+  String set = "";
+  Predicate<Integer> envPred  = null; }
+{   
+    [   
+        LOOKAHEAD(1)
+        toRead = < KEYWORD_ALL >
+        {envPred = EnvironmentRule.allPredicate();}
+        |
+        LOOKAHEAD(1)
+        toRead = < COMMA > | < LR >
+        {envPred = loc(allActionInfo, lm); }
+    ]
+    {
+      return envPred;
+    }   
+}
+
+Predicate<Integer> loc (HashMap<String, AllActionInfo> allActionInfo, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+{ Predicate<Integer> envPred  = null;
+  ArrayList<Integer> listIndex = new ArrayList<Integer>();
+  String locationName;
+  String locationName2;}
+{   
+    [
+        //necessary (), not ideal for graph and OneD - solve it!
+        < LR >
+        locationName = locName()
+        {int ind = lm.getIndexFromName(locationName);
+        listIndex.add(ind);}
+        <RR>
+        (< COMMA >
+          < LR >
+          locationName2 = locName()
+          {int ind2 = lm.getIndexFromName(locationName2);
+          listIndex.add(ind2); }
+          <RR>
+        )?
+    ]
+    {
+      envPred = EnvironmentRule.createPredicate(listIndex);
+      return envPred;
+    }   
+}
+
+
+String locName () throws NumberFormatException, RuntimeException, ParseException :
+{ Token x, y, z = null;
+  String locationName = "";}
+{
+[
+    x = < INT >
+    { locationName += x; }
+    (
+      <COMMA>
+      y = <INT>
+      { locationName += ", "+y; }
+        (
+         <COMMA>
+         z = <INT>
+         { locationName += ", "+z; }
+         )?
+         )?
+]
+{ 
+return locationName;
+}
+}
+
+
+  
+
 
 
 /*********

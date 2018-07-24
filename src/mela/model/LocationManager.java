@@ -99,9 +99,34 @@ public class LocationManager {
 		return Arrays.toString(xyzArray);
 	}
 
-
 	public int size() {
 		return locations.size();
+	}
+	
+	/**
+	 * @return all the index of locations
+	 */
+	public ArrayList<Integer> allTheIndex (){
+		ArrayList<Integer> toReturn = new ArrayList<>();
+		for (int i=0; i < locations.size(); i++){
+			toReturn.add(i);
+		}
+		return toReturn;
+	}	
+	
+	/**
+	 * @param d: distance
+	 * @param currentLoc: location index
+	 * @return indexes of the locations at distance d
+	 */
+	public ArrayList<Integer> allTheIndexDistance (int d, int currentLoc){
+		ArrayList<Integer> toReturn = new ArrayList<>();
+		for (int i=0; i< distanceMap.get(currentLoc).size(); i++){
+			if (distanceMap.get(currentLoc).get(i) == d){
+				toReturn.add(i);
+			}
+		}
+		return toReturn;
 	}
 	
 	/********
@@ -343,24 +368,6 @@ public class LocationManager {
 		//TODO build here!
 		//while parsing add location names and edges
 		return lm;
-	}
-	   
-	
-	/**
-	 * not used at the moment
-	 * @param currentLocIndex: location index
-	 * @param d: distance
-	 * @return indexes of the locations at distance d
-	 */
-	public LinkedList<Integer> indexNeigh (int currentLocIndex, int d ) {
-		//TODO check
-		LinkedList<Integer> indexList = new LinkedList<>();
-		for (int i=0; i< distanceMap.get(currentLocIndex).size(); i++){
-			if (distanceMap.get(currentLocIndex).get(i) == d){
-				indexList.add(i);
-			}
-		}
-		return indexList;
 	}
 
 }
