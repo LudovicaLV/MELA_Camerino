@@ -4,9 +4,11 @@
 package mela.model;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import mela.io.AllActionInfo;
 import mela.simulator.ActionInfo;
 import mela.simulator.Transition;
 
@@ -45,6 +47,21 @@ public class NoInfluenceRule implements Rule {
 			toReturn.add(new Transition(rate*current.get(agentIndex, l)*updateItem.getProb(), variations, new ActionInfo()));
 		}
 		return toReturn;
+	}
+	
+	public static void createAddNoInfRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){
+	       String info = nameAction + " " + map.get(nameAction).getType();
+	       String agentName = map.get(nameAction).getAgentPerformingActive();
+	       int agentIndex = am.agentIndex(agentName);
+	       Update update = map.get(nameAction).getUpdateActive();
+	       if (parameters.get(map.get(nameAction).getRateName()) != null) { 
+	       double rate = parameters.get(map.get(nameAction).getRateName()); 	       
+	       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
+	       am.directory.get(agentName).addRule(newNoInf); 
+	       }
+	       else {
+	          throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");
+	       }  
 	}
 	
 	

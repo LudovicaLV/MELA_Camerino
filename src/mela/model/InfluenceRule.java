@@ -5,10 +5,12 @@ package mela.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import mela.io.AllActionInfo;
 import mela.simulator.ActionInfo;
 import mela.simulator.Transition;
 
@@ -88,6 +90,31 @@ public class InfluenceRule implements Rule {
 			}
 		}		
 
+	}
+	
+	public static void createAddInfRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){		
+	       String info = nameAction + " " + map.get(nameAction).getType();
+	       String agentName = map.get(nameAction).getAgentPerformingActive();
+	       int agentIndex = am.agentIndex(agentName);
+	       Update updateActive = map.get(nameAction).getUpdateActive();
+	       AgentStep activeStep = new AgentStep(agentIndex, updateActive);
+	       BiFunction<Integer,LocationManager,List<Integer>> influenceFunction = map.get(nameAction).getInfSet();
+	       String passAgentName = map.get(nameAction).getAgentPerformingPassive();
+	       int agentIndexPass = am.agentIndex(passAgentName);
+	       Update updatePassive = map.get(nameAction).getUpdatePassive();
+	       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
+	       if (parameters.get(map.get(nameAction).getRateName()) == null) { 
+	    	   throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");
+	       }	    	   
+	       if (parameters.get(map.get(nameAction).getProbName()) == null) { 
+	    	   throw new Error("Parameter " + map.get(nameAction).getProbName() + " is not defined.");
+	       }
+	       String rateName = map.get(nameAction).getRateName();
+		   double rate = parameters.get(rateName);       
+	       String passProbName = map.get(nameAction).getProbName();
+	       double passProb = parameters.get(passProbName);
+	       InfluenceRule newInf = new InfluenceRule(info, rate, activeStep, influenceFunction, passiveStep, passProb);
+	       am.directory.get(agentName).addRule(newInf); 
 	}
 
 

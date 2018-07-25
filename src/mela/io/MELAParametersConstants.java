@@ -27,53 +27,55 @@ public interface MELAParametersConstants {
   /** RegularExpression Id. */
   int KEYWORD_RUN = 14;
   /** RegularExpression Id. */
-  int KEYWORD_TIME = 15;
+  int KEYWORD_STOP = 15;
   /** RegularExpression Id. */
-  int KEYWORD_POPULATION = 16;
+  int KEYWORD_TIME = 16;
   /** RegularExpression Id. */
-  int KEYWORD_POPLOC = 17;
+  int KEYWORD_POPULATION = 17;
   /** RegularExpression Id. */
-  int KEYWORD_ACTION = 18;
+  int KEYWORD_POPLOC = 18;
   /** RegularExpression Id. */
-  int KEYWORD_STEP = 19;
+  int KEYWORD_ACTION = 19;
   /** RegularExpression Id. */
-  int KEYWORD_TIMEBOUND = 20;
+  int KEYWORD_STEP = 20;
   /** RegularExpression Id. */
-  int KEYWORD_TOTAL = 21;
+  int KEYWORD_TIMEBOUND = 21;
   /** RegularExpression Id. */
-  int KEYWORD_COUNT = 22;
+  int KEYWORD_TOTAL = 22;
   /** RegularExpression Id. */
-  int SEMICOLON = 23;
+  int KEYWORD_COUNT = 23;
   /** RegularExpression Id. */
-  int ASSIGN = 24;
+  int SEMICOLON = 24;
   /** RegularExpression Id. */
-  int COMMA = 25;
+  int ASSIGN = 25;
   /** RegularExpression Id. */
-  int LR = 26;
+  int COMMA = 26;
   /** RegularExpression Id. */
-  int RR = 27;
+  int LR = 27;
   /** RegularExpression Id. */
-  int INT = 28;
+  int RR = 28;
   /** RegularExpression Id. */
-  int DOUBLE = 29;
+  int INT = 29;
   /** RegularExpression Id. */
-  int IDENTIFIER = 30;
+  int DOUBLE = 30;
   /** RegularExpression Id. */
-  int MATH_EXPR = 31;
+  int IDENTIFIER = 31;
   /** RegularExpression Id. */
-  int SPACE = 32;
+  int MATH_EXPR = 32;
   /** RegularExpression Id. */
-  int M_AND = 33;
+  int SPACE = 33;
   /** RegularExpression Id. */
-  int M_OR = 34;
+  int M_AND = 34;
   /** RegularExpression Id. */
-  int M_LINER = 35;
+  int M_OR = 35;
   /** RegularExpression Id. */
-  int M_LINEN = 36;
+  int M_LINER = 36;
   /** RegularExpression Id. */
-  int SYMBOL = 37;
+  int M_LINEN = 37;
   /** RegularExpression Id. */
-  int PARAM_SYMBOL = 38;
+  int SYMBOL = 38;
+  /** RegularExpression Id. */
+  int PARAM_SYMBOL = 39;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -101,6 +103,7 @@ public interface MELAParametersConstants {
     "<DIGIT>",
     "<WORD>",
     "\"#Runs\"",
+    "\"#Stopping Predicate\"",
     "\"#Time\"",
     "\"#Population\"",
     "\"#Pop_Loc\"",

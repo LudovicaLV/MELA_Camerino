@@ -11,7 +11,7 @@ public interface DataHandler {
 
 	void start(int iterations);
 
-	void add(Trajectory t);
+	void add(Trajectory t, int currentIteration);
 
 	void commit();
 

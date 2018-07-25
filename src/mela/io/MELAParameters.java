@@ -12,6 +12,7 @@ import mela.simulator.PopulationLocation;
 import mela.simulator.StepsPredicate;
 import mela.simulator.StoppingPredicate;
 import mela.simulator.TemporalHorizon;
+import mela.simulator.DataAndMeta;
 
 public class MELAParameters implements MELAParametersConstants {
 
@@ -19,16 +20,16 @@ public class MELAParameters implements MELAParametersConstants {
         this(new java.io.StringReader(""));
     }
 
-    public void parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+    public Parameters parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
-        this.Input();
+        return Input();
     }
 
 /***********************************************
 GRAMMAR RULES
 ***********************************************/
-  final public void Input() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public Parameters Input() throws ParseException, NumberFormatException, RuntimeException, ParseException {
 Parameters modelParam = new Parameters();
 StoppingPredicate stoppingPredicate;
 Token population, population2, action, action2, runs;
@@ -39,12 +40,15 @@ ArrayList<String > nameActions = new ArrayList< String >();
     runs = jj_consume_token(INT);
      int runsValue = Integer.parseInt(runs.image);
      modelParam.setSimulationRuns(runsValue);
+     DataAndMeta data = new DataAndMeta();
+     modelParam.setDataHandler(data);
+    jj_consume_token(KEYWORD_STOP);
     stoppingPredicate = StopChoice();
      modelParam.setStoppingPredicate(stoppingPredicate);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case KEYWORD_TOTAL:
       jj_consume_token(KEYWORD_TOTAL);
-      jj_consume_token(ASSIGN);
+      jj_consume_token(SEMICOLON);
       population = jj_consume_token(IDENTIFIER);
      nameAgents.add(population.image);
       label_1:
@@ -95,7 +99,9 @@ ArrayList<String > nameActions = new ArrayList< String >();
       jj_la1[3] = jj_gen;
       ;
     }
+      {if (true) return modelParam;}
     jj_consume_token(0);
+    throw new Error("Missing return statement in function");
   }
 
   final public StoppingPredicate StopChoice() throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -241,12 +247,6 @@ String  locationName = "[";
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3_4() {
-    if (jj_scan_token(KEYWORD_ACTION)) return true;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
   private boolean jj_3_5() {
     if (jj_scan_token(KEYWORD_STEP)) return true;
     if (jj_scan_token(ASSIGN)) return true;
@@ -271,6 +271,12 @@ String  locationName = "[";
     return false;
   }
 
+  private boolean jj_3_4() {
+    if (jj_scan_token(KEYWORD_ACTION)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
   /** Generated Token Manager. */
   public MELAParametersTokenManager token_source;
   SimpleCharStream jj_input_stream;
@@ -290,7 +296,7 @@ String  locationName = "[";
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x2000000,0x200000,0x2000000,0x40000,0x2000000,0x2000000,0xf8000,};
+      jj_la1_0 = new int[] {0x4000000,0x400000,0x4000000,0x80000,0x4000000,0x4000000,0x1f0000,};
    }
    private static void jj_la1_init_1() {
       jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
@@ -479,7 +485,7 @@ String  locationName = "[";
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[39];
+    boolean[] la1tokens = new boolean[40];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -496,7 +502,7 @@ String  locationName = "[";
         }
       }
     }
-    for (int i = 0; i < 39; i++) {
+    for (int i = 0; i < 40; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

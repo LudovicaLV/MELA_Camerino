@@ -46,7 +46,7 @@ MODEL STRUCTURE
   final public Model Input() throws ParseException, NumberFormatException, RuntimeException, ParseException {
     Model m = new Model();
     LocationManager lm;
-    AgentManager am;
+    AgentManager am = new AgentManager();
     HashMap<String,Double> parameters = new HashMap<String,Double>();
     HashMap<String,AllActionInfo> allActionInfo = new HashMap<String,AllActionInfo>();
     jj_consume_token(SECTION_SPACE);
@@ -67,7 +67,6 @@ MODEL STRUCTURE
       Param(parameters);
     }
     jj_consume_token(SECTION_AGENTS);
-    am = Agent(allActionInfo, lm);
       m.setAgentManager(am);
     label_2:
     while (true) {
@@ -79,7 +78,7 @@ MODEL STRUCTURE
         jj_la1[1] = jj_gen;
         break label_2;
       }
-      Agent(allActionInfo, lm);
+      Agent(allActionInfo, am, lm);
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SECTION_ENV:
@@ -98,43 +97,11 @@ MODEL STRUCTURE
     for (String nameAction : allActionInfo.keySet()) {
         String type = allActionInfo.get(nameAction).getType();
     if (type == "no-inf") {
-       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
-       String agentName = allActionInfo.get(nameAction).getAgentPerformingActive();
-       int agentIndex = am.agentIndex(agentName);
-       double rate = parameters.get(allActionInfo.get(nameAction).getRateName());
-       Update update = allActionInfo.get(nameAction).getUpdateActive();
-       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
-       am.directory.get(agentName).addRule(newNoInf);
+      NoInfluenceRule.createAddNoInfRule(allActionInfo, nameAction, am, parameters);
     }else if (type == "inf") {
-       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
-       String rateName = allActionInfo.get(nameAction).getRateName();
-       double rate = parameters.get(rateName);
-       String agentName = allActionInfo.get(nameAction).getAgentPerformingActive();
-       int agentIndex = am.agentIndex(agentName);
-       Update updateActive = allActionInfo.get(nameAction).getUpdateActive();
-       AgentStep activeStep = new AgentStep(agentIndex, updateActive);
-       BiFunction<Integer,LocationManager,List<Integer>> influenceFunction = allActionInfo.get(nameAction).getInfSet();
-       String passAgentName = allActionInfo.get(nameAction).getAgentPerformingPassive();
-       int agentIndexPass = am.agentIndex(passAgentName);
-       Update updatePassive = allActionInfo.get(nameAction).getUpdatePassive();
-       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
-       String passProbName = allActionInfo.get(nameAction).getProbName();
-       double passProb = parameters.get(passProbName);
-       InfluenceRule newInf = new InfluenceRule(info, rate, activeStep, influenceFunction, passiveStep, passProb);
-       am.directory.get(agentName).addRule(newInf);
+      InfluenceRule.createAddInfRule(allActionInfo, nameAction, am, parameters);
     }else if (type == "env") {
-       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
-       String passAgentName = allActionInfo.get(nameAction).getAgentPerformingPassive();
-       int agentIndexPass = am.agentIndex(passAgentName);
-       Update updatePassive = allActionInfo.get(nameAction).getUpdatePassive();
-       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
-       String rateName = allActionInfo.get(nameAction).getRateName();
-       double rate = parameters.get(rateName);
-       Predicate<Integer> environmentSet =  allActionInfo.get(nameAction).getEnvPredicate();
-       String passProbName = allActionInfo.get(nameAction).getProbName();
-       double passProb = parameters.get(passProbName);
-       EnvironmentRule newEnv = new EnvironmentRule(info, agentIndexPass, passiveStep, rate, environmentSet, passProb);
-       am.directory.get(passAgentName).addRule(newEnv);
+      EnvironmentRule.createAddEnvRule(allActionInfo, nameAction, am, parameters);
     }}
      {if (true) return m;}
     jj_consume_token(0);
@@ -353,9 +320,8 @@ PARAMETERS
 /*********
 AGENTS
 *********/
-  final public AgentManager Agent(HashMap<String,AllActionInfo> allActionInfo, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public void Agent(HashMap<String,AllActionInfo> allActionInfo,  AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
     Token t;
-    AgentManager am = new AgentManager();
     Agent agent;
     t = jj_consume_token(IDENTIFIER);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -385,8 +351,6 @@ AGENTS
       actionToStore(agent, allActionInfo, am, lm);
     }
     jj_consume_token(EOL);
-      {if (true) return am ;}
-    throw new Error("Missing return statement in function");
   }
 
   final public void actionToStore(Agent agent, HashMap<String,AllActionInfo> allActionInfo,  AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -448,11 +412,22 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
     MovementUpdate newMove = new MovementUpdate(agentIndex);
     newNoInf.setUpdateActive(newMove);
     allActionInfo.put(name.image, newNoInf);}
-    else{
+    else if (symbol.image == ">>"){
+    updateArray.add(am.agentIndex(update.image));
     updateArray.add(am.agentIndex(update.image));
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
     newNoInf.setUpdateActive(newDet);
     allActionInfo.put(name.image, newNoInf);}
+    else if (symbol.image == "<<"){
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newNoInf.setUpdateActive(newDet);
+    allActionInfo.put(name.image, newNoInf);}
+    else if (symbol.image == ".") {
+    updateArray.add(am.agentIndex(update.image));
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newNoInf.setUpdateActive(newDet);
+    allActionInfo.put(name.image, newNoInf);
+    }
   }
 
   final public Token MelaSymbol() throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -493,13 +468,13 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
  Token update=null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case KEYWORD_LOC:
-    case IDENTIFIER:
+    case KEYWORD_MOVE:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case KEYWORD_LOC:
         update = jj_consume_token(KEYWORD_LOC);
         break;
-      case IDENTIFIER:
-        update = jj_consume_token(IDENTIFIER);
+      case KEYWORD_MOVE:
+        update = jj_consume_token(KEYWORD_MOVE);
         break;
       default:
         jj_la1[14] = jj_gen;
@@ -540,22 +515,23 @@ int rangeNeighValue = 0;
     jj_consume_token(LR);
     name = jj_consume_token(IDENTIFIER);
      String nameAction = name.image;
-     AllActionInfo newInf = new AllActionInfo();
-     if (allActionInfo.containsKey(nameAction)) {
-     newInf = allActionInfo.get(nameAction);}
-     newInf.setAgentPerformingActive(agent.getName());
+    if (!allActionInfo.containsKey(nameAction)) {
+    AllActionInfo newInf = new AllActionInfo();
+    allActionInfo.put(nameAction, newInf);
+    }
+    allActionInfo.get(nameAction).setAgentPerformingActive(agent.getName());
     if (infset=="local") {
-    newInf.setInfSetLocal();
+    allActionInfo.get(nameAction).setInfSetLocal();
     }else if (infset=="neigh") {
-    newInf.setInfSetNeigh(rangeNeighValue);
+    allActionInfo.get(nameAction).setInfSetNeigh(rangeNeighValue);
     } else if(infset == "all") {
-    newInf.setInfSetAll();
+    allActionInfo.get(nameAction).setInfSetAll();
     }
     jj_consume_token(COMMA);
     rateNameToken = jj_consume_token(IDENTIFIER);
      String rateName = rateNameToken.image;
-     newInf.setType("inf");
-     newInf.setRateName(rateName);
+     allActionInfo.get(nameAction).setType("inf");
+     allActionInfo.get(nameAction).setRateName(rateName);
     jj_consume_token(RR);
     symbol = MelaSymbol();
     update = jj_consume_token(IDENTIFIER);
@@ -578,11 +554,19 @@ int rangeNeighValue = 0;
     int agentIndex = am.agentIndex(agent.getName());
     if (symbol.image == "|>") {
     MovementUpdate newMove = new MovementUpdate(agentIndex);
-    newInf.setUpdateActive(newMove);}
-    else{
+    allActionInfo.get(nameAction).setUpdateActive(newMove);}
+    else if (symbol.image == ">>"){
+    updateArray.add(am.agentIndex(update.image));
     updateArray.add(am.agentIndex(update.image));
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newInf.setUpdateActive(newDet);}
+    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    else if (symbol.image == "<<"){
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    else if (symbol.image == ".") {
+    updateArray.add(am.agentIndex(update.image));
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdateActive(newDet);}
   }
 
   final public String InfSet(HashMap<String, AllActionInfo> allActionInfo) throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -626,14 +610,15 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
     jj_consume_token(LR);
     name = jj_consume_token(IDENTIFIER);
      String nameAction = name.image;
+     if (!allActionInfo.containsKey(nameAction)) {
      AllActionInfo newInf = new AllActionInfo();
-     if (allActionInfo.containsKey(nameAction)) {
-     newInf = allActionInfo.get(nameAction);}
-     newInf.setAgentPerformingPassive(agent.getName());
+     allActionInfo.put(nameAction, newInf);
+    }
+     allActionInfo.get(nameAction).setAgentPerformingPassive(agent.getName());
     jj_consume_token(COMMA);
     probNameToken = jj_consume_token(IDENTIFIER);
      String probName = probNameToken.image;
-    newInf.setProbName(probName);
+    allActionInfo.get(nameAction).setProbName(probName);
     jj_consume_token(RR);
     symbolPass = MelaSymbol();
     updatePass = jj_consume_token(IDENTIFIER);
@@ -656,11 +641,19 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
     int agentIndex = am.agentIndex(agent.getName());
     if (symbolPass.image == "|>") {
     MovementUpdate newMove = new MovementUpdate(agentIndex);
-    newInf.setUpdatePassive(newMove);}
-    else{
+    allActionInfo.get(nameAction).setUpdatePassive(newMove);}
+    else if (symbolPass.image == ">>"){
+    updateArray.add(am.agentIndex(updatePass.image));
     updateArray.add(am.agentIndex(updatePass.image));
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newInf.setUpdatePassive(newDet);}
+    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    else if (symbolPass.image == "<<"){
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    else if (symbolPass.image == ".") {
+    updateArray.add(am.agentIndex(updatePass.image));
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
   }
 
   final public void EnvAgent(HashMap<String,AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -698,16 +691,17 @@ Predicate<Integer> envset;
     jj_consume_token(LR);
     name = jj_consume_token(IDENTIFIER);
      String nameAction = name.image;
+     if (!allActionInfo.containsKey(nameAction)) {
      AllActionInfo newEnv = new AllActionInfo();
-     if (allActionInfo.containsKey(nameAction)) {
-     newEnv = allActionInfo.get(nameAction);}
-     newEnv.setAgentPerformingActive(agent.getName());
-     newEnv.setEnvPredicate(envset);
+     allActionInfo.put(nameAction, newEnv);
+    }
+     allActionInfo.get(nameAction).setAgentPerformingActive(agent.getName());
+     allActionInfo.get(nameAction).setEnvPredicate(envset);
     jj_consume_token(COMMA);
     rateNameToken = jj_consume_token(IDENTIFIER);
      String rateName = rateNameToken.image;
-     newEnv.setType("env");
-     newEnv.setRateName(rateName);
+     allActionInfo.get(nameAction).setType("env");
+     allActionInfo.get(nameAction).setRateName(rateName);
     jj_consume_token(RR);
     symbol = MelaSymbol();
     update = jj_consume_token(IDENTIFIER);
@@ -850,6 +844,11 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
    String locationName = "[";
    Token t, x, y, z, n;
     t = jj_consume_token(IDENTIFIER);
+        if (m.getAgentManager().agentIndex(t.image) != -1){
+          agentIndex = m.getAgentManager().agentIndex(t.image);
+      }else{
+          {if (true) throw new Error("Agent  " +  t.image + " does not exist.");}
+      };
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LR:
       jj_consume_token(LR);
@@ -953,59 +952,8 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
     finally { jj_save(6, xla); }
   }
 
-  private boolean jj_3R_11() {
-    if (jj_scan_token(LR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_9() {
-    if (jj_scan_token(LR)) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_scan_token(KEYWORD_TWOD)) return true;
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_14() {
-    if (jj_scan_token(LANG)) return true;
-    if (jj_scan_token(DASH)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_12() {
-    if (jj_scan_token(LR)) return true;
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_scan_token(KEYWORD_ONED)) return true;
-    if (jj_3R_9()) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(KEYWORD_GRAPH)) return true;
-    if (jj_3R_8()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_8() {
-    if (jj_scan_token(VERTICES)) return true;
-    return false;
-  }
-
   private boolean jj_3_7() {
     if (jj_3R_14()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_13() {
-    if (jj_scan_token(DASH)) return true;
-    if (jj_scan_token(RANG)) return true;
     return false;
   }
 
@@ -1030,6 +978,57 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
     return false;
   }
 
+  private boolean jj_3R_11() {
+    if (jj_scan_token(LR)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_9() {
+    if (jj_scan_token(LR)) return true;
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_scan_token(KEYWORD_TWOD)) return true;
+    if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_13() {
+    if (jj_scan_token(DASH)) return true;
+    if (jj_scan_token(RANG)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_12() {
+    if (jj_scan_token(LR)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(KEYWORD_ONED)) return true;
+    if (jj_3R_9()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_14() {
+    if (jj_scan_token(LANG)) return true;
+    if (jj_scan_token(DASH)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(KEYWORD_GRAPH)) return true;
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    if (jj_scan_token(VERTICES)) return true;
+    return false;
+  }
+
   /** Generated Token Manager. */
   public MELAparserTokenManager token_source;
   SimpleCharStream jj_input_stream;
@@ -1051,10 +1050,10 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
       jj_la1_init_2();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x0,0x0,0x20000,0x1e00000,0x0,0x0,0xc000000,0xc000000,0x0,0x0,0x0,0x0,0x0,0x0,0x10000000,0x10000000,0x0,0x0,0x70000000,0x70000000,0x0,0x0,0x40000000,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x0,0x0,0x20000,0x1e00000,0x0,0x0,0xc000000,0xc000000,0x0,0x0,0x0,0x0,0x0,0x0,0x90000000,0x90000000,0x0,0x0,0x70000000,0x70000000,0x0,0x0,0x40000000,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x1000000,0x1000000,0x0,0x0,0x4000,0x4000,0x0,0x0,0x80,0x1,0x88080,0x20000,0x340002,0x340002,0x1000000,0x1000000,0x80,0x20000,0x0,0x0,0x20000,0x1,0x4080,0x4080,0x4000,0x80,0x4000,0x4000,0x400000,0x20000,0x4000,0x4000,0x80,};
+      jj_la1_1 = new int[] {0x2000000,0x2000000,0x0,0x0,0x8000,0x8000,0x0,0x0,0x100,0x2,0x110100,0x40000,0x680004,0x680004,0x0,0x0,0x100,0x40000,0x0,0x0,0x40000,0x2,0x8100,0x8100,0x8000,0x100,0x8000,0x8000,0x800000,0x40000,0x8000,0x8000,0x100,};
    }
    private static void jj_la1_init_2() {
       jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
@@ -1243,7 +1242,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[65];
+    boolean[] la1tokens = new boolean[66];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -1263,7 +1262,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
         }
       }
     }
-    for (int i = 0; i < 65; i++) {
+    for (int i = 0; i < 66; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

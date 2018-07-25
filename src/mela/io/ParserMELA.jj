@@ -109,6 +109,8 @@ IDENTIFIERS
 <DEFAULT> TOKEN : { <KEYWORD_NEIGH : "N" > }
 <DEFAULT> TOKEN : { <KEYWORD_ALL : "all" > }
 
+<DEFAULT> TOKEN : { <KEYWORD_MOVE : "new(l)" > }
+
 <DEFAULT> TOKEN : { <EOL : ";" > }
 <DEFAULT> TOKEN : { <PLUS : "+" > }
 <DEFAULT> TOKEN : { <DOT : "." > }
@@ -170,7 +172,7 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
 {
     Model m = new Model();    
     LocationManager lm;
-    AgentManager am;
+    AgentManager am = new AgentManager();
     HashMap<String,Double> parameters = new HashMap<String,Double>();
     HashMap<String,AllActionInfo> allActionInfo = new HashMap<String,AllActionInfo>();
 }
@@ -183,10 +185,9 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
       Param( parameters )
     )*
     <SECTION_AGENTS>
-    am = Agent(allActionInfo, lm)
     { m.setAgentManager(am); }   
     (
-	  Agent(allActionInfo, lm)     
+	  Agent(allActionInfo, am, lm)     
     )*
     (<SECTION_ENV>  
 	  EnvAgent(allActionInfo, am, lm)     
@@ -201,43 +202,11 @@ Model Input() throws NumberFormatException, RuntimeException, ParseException :
     for (String nameAction : allActionInfo.keySet()) {
         String type = allActionInfo.get(nameAction).getType();
     if (type == "no-inf") {
-       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
-       String agentName = allActionInfo.get(nameAction).getAgentPerformingActive();
-       int agentIndex = am.agentIndex(agentName);
-       double rate = parameters.get(allActionInfo.get(nameAction).getRateName());
-       Update update = allActionInfo.get(nameAction).getUpdateActive();
-       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
-       am.directory.get(agentName).addRule(newNoInf);  
+      NoInfluenceRule.createAddNoInfRule(allActionInfo, nameAction, am, parameters);     
     }else if (type == "inf") {
-       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
-       String rateName = allActionInfo.get(nameAction).getRateName();
-       double rate = parameters.get(rateName);
-       String agentName = allActionInfo.get(nameAction).getAgentPerformingActive();
-       int agentIndex = am.agentIndex(agentName);
-       Update updateActive = allActionInfo.get(nameAction).getUpdateActive();
-       AgentStep activeStep = new AgentStep(agentIndex, updateActive);
-       BiFunction<Integer,LocationManager,List<Integer>> influenceFunction = allActionInfo.get(nameAction).getInfSet();
-       String passAgentName = allActionInfo.get(nameAction).getAgentPerformingPassive();
-       int agentIndexPass = am.agentIndex(passAgentName);
-       Update updatePassive = allActionInfo.get(nameAction).getUpdatePassive();
-       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
-       String passProbName = allActionInfo.get(nameAction).getProbName();
-       double passProb = parameters.get(passProbName);
-       InfluenceRule newInf = new InfluenceRule(info, rate, activeStep, influenceFunction, passiveStep, passProb);
-       am.directory.get(agentName).addRule(newInf);  
+      InfluenceRule.createAddInfRule(allActionInfo, nameAction, am, parameters);     
     }else if (type == "env") {
-       String info = nameAction + " " + allActionInfo.get(nameAction).getType();
-       String passAgentName = allActionInfo.get(nameAction).getAgentPerformingPassive();
-       int agentIndexPass = am.agentIndex(passAgentName);
-       Update updatePassive = allActionInfo.get(nameAction).getUpdatePassive();
-       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
-       String rateName = allActionInfo.get(nameAction).getRateName();
-       double rate = parameters.get(rateName);
-       Predicate<Integer> environmentSet =  allActionInfo.get(nameAction).getEnvPredicate();
-       String passProbName = allActionInfo.get(nameAction).getProbName();
-       double passProb = parameters.get(passProbName);
-       EnvironmentRule newEnv = new EnvironmentRule(info, agentIndexPass, passiveStep, rate, environmentSet, passProb);
-       am.directory.get(passAgentName).addRule(newEnv);  
+      EnvironmentRule.createAddEnvRule(allActionInfo, nameAction, am, parameters);
     }}
      return m; }
      <EOF>
@@ -424,10 +393,9 @@ void Param( HashMap<String,Double> parameters ) throws NumberFormatException, Ru
 AGENTS
 *********/
 
-AgentManager Agent(HashMap<String,AllActionInfo> allActionInfo, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
+void Agent(HashMap<String,AllActionInfo> allActionInfo,  AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
 {
     Token t;
-    AgentManager am = new AgentManager();
     Agent agent;
 }
 {
@@ -442,9 +410,8 @@ AgentManager Agent(HashMap<String,AllActionInfo> allActionInfo, LocationManager 
     (
         <PLUS> 
         actionToStore(agent, allActionInfo, am, lm) 
-    )* 
+    )*
     <EOL>
-    { return am ;}
 }
 
 void actionToStore(Agent agent, HashMap<String,AllActionInfo> allActionInfo,  AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
@@ -481,7 +448,7 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
      newNoInf.setType("no-inf");
      newNoInf.setRateName(rateName); }
     <RR>
-    symbol = MelaSymbol()    
+    symbol = MelaSymbol()     
     update = <IDENTIFIER>
     <LR>
     updateloc = UpdateLoc()
@@ -498,11 +465,22 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
     MovementUpdate newMove = new MovementUpdate(agentIndex);
     newNoInf.setUpdateActive(newMove);
     allActionInfo.put(name.image, newNoInf);}
-    else{
-    updateArray.add(am.agentIndex(update.image));  
+    else if (symbol.image == ">>"){
+    updateArray.add(am.agentIndex(update.image));
+    updateArray.add(am.agentIndex(update.image));
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
     newNoInf.setUpdateActive(newDet);
-    allActionInfo.put(name.image, newNoInf);}   
+    allActionInfo.put(name.image, newNoInf);}
+    else if (symbol.image == "<<"){  
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newNoInf.setUpdateActive(newDet);
+    allActionInfo.put(name.image, newNoInf);}
+    else if (symbol.image == ".") {
+    updateArray.add(am.agentIndex(update.image));
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    newNoInf.setUpdateActive(newDet);
+    allActionInfo.put(name.image, newNoInf);
+    }  
 }
 }
 
@@ -535,7 +513,7 @@ Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException
         update = < KEYWORD_LOC >
         |
         LOOKAHEAD(1)
-        update = <  IDENTIFIER >
+        update = <  KEYWORD_MOVE >
     ]
     { 
     return update;
@@ -562,24 +540,25 @@ int rangeNeighValue = 0;
     < RBRAC >
     <LR>    
     name = <IDENTIFIER>
-    {String nameAction = name.image; 
-     AllActionInfo newInf = new AllActionInfo();
-     if (allActionInfo.containsKey(nameAction)) {
-     newInf = allActionInfo.get(nameAction);}
-     newInf.setAgentPerformingActive(agent.getName());
+    {String nameAction = name.image;
+    if (!allActionInfo.containsKey(nameAction)) {
+    AllActionInfo newInf = new AllActionInfo();
+    allActionInfo.put(nameAction, newInf);
+    }
+    allActionInfo.get(nameAction).setAgentPerformingActive(agent.getName());
     if (infset=="local") {
-    newInf.setInfSetLocal();
+    allActionInfo.get(nameAction).setInfSetLocal();
     }else if (infset=="neigh") {
-    newInf.setInfSetNeigh(rangeNeighValue);
+    allActionInfo.get(nameAction).setInfSetNeigh(rangeNeighValue);
     } else if(infset == "all") {
-    newInf.setInfSetAll();
+    allActionInfo.get(nameAction).setInfSetAll();
     }    
     }
     <COMMA>
     rateNameToken = <IDENTIFIER>
     {String rateName = rateNameToken.image; 
-     newInf.setType("inf");
-     newInf.setRateName(rateName); }
+     allActionInfo.get(nameAction).setType("inf");
+     allActionInfo.get(nameAction).setRateName(rateName); }
     <RR>
     symbol = MelaSymbol()    
     update = <IDENTIFIER>
@@ -596,11 +575,19 @@ int rangeNeighValue = 0;
    {int agentIndex = am.agentIndex(agent.getName());
     if (symbol.image == "|>") {
     MovementUpdate newMove = new MovementUpdate(agentIndex);
-    newInf.setUpdateActive(newMove);}
-    else{
+    allActionInfo.get(nameAction).setUpdateActive(newMove);}
+    else if (symbol.image == ">>"){
+    updateArray.add(am.agentIndex(update.image));
     updateArray.add(am.agentIndex(update.image));  
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newInf.setUpdateActive(newDet);}   
+    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    else if (symbol.image == "<<"){ 
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    else if (symbol.image == ".") {
+    updateArray.add(am.agentIndex(update.image));  
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdateActive(newDet);}
    }
 }
 
@@ -636,15 +623,16 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
     <LR>
     name = <IDENTIFIER>
     {String nameAction = name.image;
+     if (!allActionInfo.containsKey(nameAction)) {
      AllActionInfo newInf = new AllActionInfo();
-     if (allActionInfo.containsKey(nameAction)) {
-     newInf = allActionInfo.get(nameAction);}  
-     newInf.setAgentPerformingPassive(agent.getName());
+     allActionInfo.put(nameAction, newInf);
+    }
+     allActionInfo.get(nameAction).setAgentPerformingPassive(agent.getName());
     }
     <COMMA>
     probNameToken = <IDENTIFIER>
     {String probName = probNameToken.image; 
-    newInf.setProbName(probName); }
+    allActionInfo.get(nameAction).setProbName(probName); }
     <RR>
     symbolPass = MelaSymbol() 
     updatePass = <IDENTIFIER>
@@ -661,11 +649,19 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
    {int agentIndex = am.agentIndex(agent.getName());
     if (symbolPass.image == "|>") {
     MovementUpdate newMove = new MovementUpdate(agentIndex);
-    newInf.setUpdatePassive(newMove);}
-    else{
-    updateArray.add(am.agentIndex(updatePass.image));  
+    allActionInfo.get(nameAction).setUpdatePassive(newMove);}
+    else if (symbolPass.image == ">>"){
+    updateArray.add(am.agentIndex(updatePass.image));
+    updateArray.add(am.agentIndex(updatePass.image)); 
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newInf.setUpdatePassive(newDet);}   
+    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    else if (symbolPass.image == "<<"){ 
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    else if (symbolPass.image == ".") {
+    updateArray.add(am.agentIndex(updatePass.image)); 
+    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
+    allActionInfo.get(nameAction).setUpdatePassive(newDet);}     
 }
 }
 
@@ -701,17 +697,18 @@ Predicate<Integer> envset;
     <LR>    
     name = <IDENTIFIER>
     {String nameAction = name.image; 
+     if (!allActionInfo.containsKey(nameAction)) {
      AllActionInfo newEnv = new AllActionInfo();
-     if (allActionInfo.containsKey(nameAction)) {
-     newEnv = allActionInfo.get(nameAction);}
-     newEnv.setAgentPerformingActive(agent.getName());  
-     newEnv.setEnvPredicate(envset);   
+     allActionInfo.put(nameAction, newEnv);
+    }
+     allActionInfo.get(nameAction).setAgentPerformingActive(agent.getName());  
+     allActionInfo.get(nameAction).setEnvPredicate(envset);   
     }
     <COMMA>
     rateNameToken = <IDENTIFIER>
     {String rateName = rateNameToken.image; 
-     newEnv.setType("env");
-     newEnv.setRateName(rateName); }
+     allActionInfo.get(nameAction).setType("env");
+     allActionInfo.get(nameAction).setRateName(rateName); }
     <RR>
     symbol = MelaSymbol()    
     update = <IDENTIFIER>
@@ -828,7 +825,13 @@ void InitAgent( Model m , HashMap<Integer,HashMap<Integer,Integer>> allocationMa
    Token t, x, y, z, n;
 }
 {
-    t = <IDENTIFIER> 
+    t = <IDENTIFIER>
+     {  if (m.getAgentManager().agentIndex(t.image) != -1){
+    	  agentIndex = m.getAgentManager().agentIndex(t.image);
+      }else{
+    	  throw new Error("Agent  " +  t.image + " does not exist."); 
+      }; }
+    
     (
     <LR>
     x = <INT> { locationName += x; }

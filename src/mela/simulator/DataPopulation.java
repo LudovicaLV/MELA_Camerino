@@ -20,7 +20,7 @@ public class DataPopulation implements DataHandler {
 	}
 
 	@Override
-	public void add(Trajectory t) {
+	public void add(Trajectory t, int currentIteration) {
 		// TODO Auto-generated method stub
 		
 	}

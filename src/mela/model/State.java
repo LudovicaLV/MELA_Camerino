@@ -77,5 +77,17 @@ public class State {
 		return locations;
 	}
 
+	public int getAgents() {
+		return agents;
+	}
+
+	public int getLocations() {
+		return locations;
+	}
+
+	public int[][] getState() {
+		return state;
+	}
+
     
 }

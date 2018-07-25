@@ -5,10 +5,12 @@ package mela.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import mela.io.AllActionInfo;
 import mela.simulator.ActionInfo;
 import mela.simulator.Transition;
 
@@ -75,7 +77,26 @@ public class EnvironmentRule implements Rule {
 	}
 	
 
-
+    public static void createAddEnvRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){
+    	 String info = nameAction + " " + map.get(nameAction).getType();
+         String passAgentName = map.get(nameAction).getAgentPerformingPassive();
+         int agentIndexPass = am.agentIndex(passAgentName);
+         Update updatePassive = map.get(nameAction).getUpdatePassive();
+         AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
+         Predicate<Integer> environmentSet =  map.get(nameAction).getEnvPredicate();
+         if (parameters.get(map.get(nameAction).getRateName()) == null) { 
+	    	  throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");
+	     }	    	   
+	     if (parameters.get(map.get(nameAction).getProbName()) == null) { 
+	    	  throw new Error("Parameter " + map.get(nameAction).getProbName() + " is not defined.");
+	     }
+	     String rateName = map.get(nameAction).getRateName();
+	     double rate = parameters.get(rateName);
+         String passProbName = map.get(nameAction).getProbName();
+         double passProb = parameters.get(passProbName);
+         EnvironmentRule newEnv = new EnvironmentRule(info, agentIndexPass, passiveStep, rate, environmentSet, passProb);
+         am.directory.get(passAgentName).addRule(newEnv);    	
+    }
 
 
 

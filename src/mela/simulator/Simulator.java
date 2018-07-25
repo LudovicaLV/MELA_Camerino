@@ -33,7 +33,7 @@ public class Simulator {
 		handler.start(iterations);
 		for( int i=0 ; i<iterations ; i++ ) {
 			Trajectory t = computeTrajectory( m , p.getStopPredicate() );
-			handler.add(t);
+			handler.add(t, i);
 		}
 		handler.commit();
 	}

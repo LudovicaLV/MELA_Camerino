@@ -17,6 +17,7 @@ import mela.simulator.PopulationLocation;
 import mela.simulator.StepsPredicate;
 import mela.simulator.StoppingPredicate;
 import mela.simulator.TemporalHorizon;
+import mela.simulator.DataAndMeta;
 
 public class MELAParameters {
        
@@ -24,10 +25,10 @@ public class MELAParameters {
         this(new java.io.StringReader(""));
     }
 
-    public void parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+    public Parameters parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
-        this.Input();
+        return Input();
     }
 
 }
@@ -78,6 +79,8 @@ IDENTIFIERS
 
 <DEFAULT> TOKEN : { <KEYWORD_RUN : "#Runs" > }
 
+<DEFAULT> TOKEN : { <KEYWORD_STOP : "#Stopping Predicate" > }
+
 <DEFAULT> TOKEN : { <KEYWORD_TIME : "#Time" > }
 <DEFAULT> TOKEN : { <KEYWORD_POPULATION : "#Population" > }
 <DEFAULT> TOKEN : { <KEYWORD_POPLOC : "#Pop_Loc" > }
@@ -116,7 +119,7 @@ TOKEN : { <#PARAM_SYMBOL : [".", "+", "-", "*", "/", "%", "^" ]> }
 GRAMMAR RULES
 ***********************************************/
 
-void Input() throws NumberFormatException, RuntimeException, ParseException :
+Parameters Input() throws NumberFormatException, RuntimeException, ParseException :
 {
 Parameters modelParam = new Parameters();
 StoppingPredicate stoppingPredicate;
@@ -129,13 +132,16 @@ ArrayList<String > nameActions = new ArrayList< String >();
     <ASSIGN>
     runs = <INT>
     {int runsValue = Integer.parseInt(runs.image);
-     modelParam.setSimulationRuns(runsValue); }
+     modelParam.setSimulationRuns(runsValue);
+     DataAndMeta data = new DataAndMeta();
+     modelParam.setDataHandler(data);}
+     <KEYWORD_STOP>
     stoppingPredicate = StopChoice()
     {modelParam.setStoppingPredicate(stoppingPredicate);}
       
     (
     <KEYWORD_TOTAL>
-    <ASSIGN>
+    <SEMICOLON>
     population = <IDENTIFIER>
     {nameAgents.add(population.image); }
     (<COMMA>
@@ -156,7 +162,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
     { DataAction dataAc = new DataAction();
       dataAc.setNames(nameActions);
       })?
-    
+    { return modelParam; }
     <EOF>
 }
 

@@ -58,7 +58,7 @@ public class Trajectory {
 			this.s = s;
 		}
 
-		public ActionInfo getInfo() {
+		public ActionInfo getActionInfo() {
 			return info;
 		}
 
@@ -66,11 +66,19 @@ public class Trajectory {
 			return time;
 		}
 
-		public State getS() {
+		public State getState() {
 			return s;
 		}
 
 
+	}
+
+	public LinkedList<TrajectoryStep> getData() {
+		return data;
+	}
+
+	public double getCurrentTime() {
+		return currentTime;
 	}
 
 }

@@ -59,73 +59,75 @@ public interface MELAparserConstants {
   /** RegularExpression Id. */
   int KEYWORD_ALL = 30;
   /** RegularExpression Id. */
-  int EOL = 31;
+  int KEYWORD_MOVE = 31;
   /** RegularExpression Id. */
-  int PLUS = 32;
+  int EOL = 32;
   /** RegularExpression Id. */
-  int DOT = 33;
+  int PLUS = 33;
   /** RegularExpression Id. */
-  int SEMICOLON = 34;
+  int DOT = 34;
   /** RegularExpression Id. */
-  int DEFINE = 35;
+  int SEMICOLON = 35;
   /** RegularExpression Id. */
-  int ASSIGN = 36;
+  int DEFINE = 36;
   /** RegularExpression Id. */
-  int LSQ = 37;
+  int ASSIGN = 37;
   /** RegularExpression Id. */
-  int RSQ = 38;
+  int LSQ = 38;
   /** RegularExpression Id. */
-  int LR = 39;
+  int RSQ = 39;
   /** RegularExpression Id. */
-  int RR = 40;
+  int LR = 40;
   /** RegularExpression Id. */
-  int QUO = 41;
+  int RR = 41;
   /** RegularExpression Id. */
-  int SQUO = 42;
+  int QUO = 42;
   /** RegularExpression Id. */
-  int EXCL = 43;
+  int SQUO = 43;
   /** RegularExpression Id. */
-  int LBRAC = 44;
+  int EXCL = 44;
   /** RegularExpression Id. */
-  int RBRAC = 45;
+  int LBRAC = 45;
   /** RegularExpression Id. */
-  int COMMA = 46;
+  int RBRAC = 46;
   /** RegularExpression Id. */
-  int LANG = 47;
+  int COMMA = 47;
   /** RegularExpression Id. */
-  int RANG = 48;
+  int LANG = 48;
   /** RegularExpression Id. */
-  int PARALLEL = 49;
+  int RANG = 49;
   /** RegularExpression Id. */
-  int TRIANGLE = 50;
+  int PARALLEL = 50;
   /** RegularExpression Id. */
-  int DASH = 51;
+  int TRIANGLE = 51;
   /** RegularExpression Id. */
-  int UP = 52;
+  int DASH = 52;
   /** RegularExpression Id. */
-  int DOWN = 53;
+  int UP = 53;
   /** RegularExpression Id. */
-  int INT = 54;
+  int DOWN = 54;
   /** RegularExpression Id. */
-  int DOUBLE = 55;
+  int INT = 55;
   /** RegularExpression Id. */
-  int IDENTIFIER = 56;
+  int DOUBLE = 56;
   /** RegularExpression Id. */
-  int MATH_EXPR = 57;
+  int IDENTIFIER = 57;
   /** RegularExpression Id. */
-  int SPACE = 58;
+  int MATH_EXPR = 58;
   /** RegularExpression Id. */
-  int M_AND = 59;
+  int SPACE = 59;
   /** RegularExpression Id. */
-  int M_OR = 60;
+  int M_AND = 60;
   /** RegularExpression Id. */
-  int M_LINER = 61;
+  int M_OR = 61;
   /** RegularExpression Id. */
-  int M_LINEN = 62;
+  int M_LINER = 62;
   /** RegularExpression Id. */
-  int SYMBOL = 63;
+  int M_LINEN = 63;
   /** RegularExpression Id. */
-  int PARAM_SYMBOL = 64;
+  int SYMBOL = 64;
+  /** RegularExpression Id. */
+  int PARAM_SYMBOL = 65;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -169,6 +171,7 @@ public interface MELAparserConstants {
     "\"l\"",
     "\"N\"",
     "\"all\"",
+    "\"new(l)\"",
     "\";\"",
     "\"+\"",
     "\".\"",
