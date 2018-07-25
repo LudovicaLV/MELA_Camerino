@@ -19,61 +19,62 @@ import mela.model.Update;
  */
 public class AllActionInfo {
 	
-	public static String agentPerformingActive;
-	public static String agentPerformingPassive;
-	public static String type;
-	public static String rateName;
-	public static String probName;
-	public static Update updateActive;
-	public static Update updatePassive;
-	public static BiFunction<Integer,LocationManager,List<Integer>> infSet;
-	public static Predicate<Integer> envPredicate;
+	public String agentPerformingActive;
+	public String agentPerformingPassive;
+	public String type;
+	public String rateName;
+	public String probName;
+	public Update updateActive;
+	public Update updatePassive;
+	public BiFunction<Integer,LocationManager,List<Integer>> infSet;
+	public Predicate<Integer> envPredicate;
+		
 	
 	public void setAgentPerformingActive(String agentPerformingActive) {
-		AllActionInfo.agentPerformingActive = agentPerformingActive;
+		this.agentPerformingActive = agentPerformingActive;
 	}
 	public void setAgentPerformingPassive(String agentPerformingPassive) {
-		AllActionInfo.agentPerformingPassive = agentPerformingPassive;
+		this.agentPerformingPassive = agentPerformingPassive;
 	}
 	public void setType(String type) {
-		AllActionInfo.type = type;
+		this.type = type;
 	}
 	public void setRateName(String rateName) {
-		AllActionInfo.rateName = rateName;
+		this.rateName = rateName;
 	}
 	public void setProbName(String probName) {
-		AllActionInfo.probName = probName;
+		this.probName = probName;
 	}
 	public void setUpdateActive(Update updateActive) {
-		AllActionInfo.updateActive = updateActive;
+		this.updateActive = updateActive;
 	}
 	public void setUpdatePassive(Update updatePassive) {
-		AllActionInfo.updatePassive = updatePassive;
+		this.updatePassive = updatePassive;
 	}
 	
 	//depending on the influence set
 	//local
 	public void setInfSetLocal() {
-		AllActionInfo.infSet = ( (x,y) -> 
+		this.infSet = ( (x,y) -> 
 		createList(x)
 	);
 	}
 	
 	//neighbouring locations at distance d
 	public void setInfSetNeigh(Integer d) {
-		AllActionInfo.infSet = ( (x,y) -> 
+		this.infSet = ( (x,y) -> 
 		y.allTheIndexDistance(d, x)
 	);	
     }	
 		
 	//all the locations	
 	public void setInfSetAll() {
-		AllActionInfo.infSet = ( (x,y) -> 
+		this.infSet = ( (x,y) -> 
 		y.allTheIndex()
 	);	
     }		
 	public void setEnvPredicate(Predicate<Integer> envPredicate) {
-		AllActionInfo.envPredicate = envPredicate;
+		this.envPredicate = envPredicate;
 	}	
 	
 	public String getAgentPerformingActive() {
@@ -111,6 +112,11 @@ public class AllActionInfo {
 		ArrayList<Integer> newList = new ArrayList<Integer>();
 		newList.add(x);
 		return newList;
+	}
+	@Override
+	public String toString() {
+		return "AllActionInfo [agentPerformingActive=" + agentPerformingActive + ", agentPerformingPassive="
+				+ agentPerformingPassive + ", type=" + type + ", rateName=" + rateName + ", probName=" + probName + "]";
 	}
 
 }

@@ -406,10 +406,12 @@ void Agent(HashMap<String,AllActionInfo> allActionInfo,  AgentManager am, Locati
      )?
      {agent = am.addAgent(t.image);}
     <DEFINE>
-    actionToStore(agent, allActionInfo, am, lm) 
+    actionToStore(agent, allActionInfo, am, lm)
+    {System.out.println(allActionInfo); }
     (
         <PLUS> 
-        actionToStore(agent, allActionInfo, am, lm) 
+        actionToStore(agent, allActionInfo, am, lm)
+        {System.out.println(allActionInfo); }
     )*
     <EOL>
 }

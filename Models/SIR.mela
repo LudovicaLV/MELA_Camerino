@@ -10,7 +10,9 @@ e = 5.0;
 
 #Agents
 
-P(l) := (actP, c)|>P(new(l));
+P(l) := (actI,i).P(l) + (actP, p)|>P(new(l));
+
+Q(l) := (actQ,e).P(l);
 
 #Initial conditions
 P(1)[10]

@@ -40,15 +40,15 @@ public class TestMELAParser {
 		 
 		 System.out.println(p.getSimulationRuns());
 		 
-		 Random random = new Random();
-		 Simulator simulatorMELA = new Simulator(random);
-		 simulatorMELA.simulate(m, p);
+//		 Random random = new Random();
+//		 Simulator simulatorMELA = new Simulator(random);
+//		 simulatorMELA.simulate(m, p);
 		 //number of locations
 		 int s = m.getLocationManager().size();	
 		 assertEquals(s,10);
 //		 //connection among locations
 		 boolean edge = m.getLocationManager().edge("[0]", "[9]");
-		 assertEquals(edge, false);
+		 assertEquals(edge, true);
 //		 //get name
 //		 String name =  m.getLocationManager().getLocationName(10);
 //		 assertEquals(name, "[2, 2]");
@@ -67,7 +67,7 @@ public class TestMELAParser {
 //    }	
 	
 	      int t = m.getAgentManager().size();
-	      assertEquals(t,1);
+	      assertEquals(t,2);
 	      
 	      int i = m.getAgentManager().agentIndex("P");
 	      assertEquals(i, 0);

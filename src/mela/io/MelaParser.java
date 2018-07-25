@@ -92,6 +92,12 @@ MODEL STRUCTURE
     jj_consume_token(SECTION_INIT);
      HashMap<Integer,HashMap<Integer,Integer>> alllocationMap = Init(m);
      m.setAgentLocationFunction( alllocationMap );
+     
+     
+     for (String name : allActionInfo.keySet()){
+ 	 System.out.println(name + " " + allActionInfo.get(name).getRateName());
+  }
+     
      //building the rules
     //get the type, build the rule dependent on that
     for (String nameAction : allActionInfo.keySet()) {
@@ -337,6 +343,7 @@ AGENTS
       agent = am.addAgent(t.image);
     jj_consume_token(DEFINE);
     actionToStore(agent, allActionInfo, am, lm);
+     System.out.println(allActionInfo);
     label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -349,6 +356,7 @@ AGENTS
       }
       jj_consume_token(PLUS);
       actionToStore(agent, allActionInfo, am, lm);
+         System.out.println(allActionInfo);
     }
     jj_consume_token(EOL);
   }
@@ -952,11 +960,6 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
     finally { jj_save(6, xla); }
   }
 
-  private boolean jj_3_7() {
-    if (jj_3R_14()) return true;
-    return false;
-  }
-
   private boolean jj_3_6() {
     if (jj_3R_13()) return true;
     return false;
@@ -1006,15 +1009,15 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
     return false;
   }
 
-  private boolean jj_3_2() {
-    if (jj_scan_token(KEYWORD_ONED)) return true;
-    if (jj_3R_9()) return true;
-    return false;
-  }
-
   private boolean jj_3R_14() {
     if (jj_scan_token(LANG)) return true;
     if (jj_scan_token(DASH)) return true;
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(KEYWORD_ONED)) return true;
+    if (jj_3R_9()) return true;
     return false;
   }
 
@@ -1026,6 +1029,11 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
 
   private boolean jj_3R_8() {
     if (jj_scan_token(VERTICES)) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_3R_14()) return true;
     return false;
   }
 
