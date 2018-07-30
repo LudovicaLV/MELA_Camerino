@@ -8,6 +8,7 @@ package mela.io;
 
 import java.util.ArrayList;
 
+import mela.model.Model;
 import mela.simulator.ActionCount;
 import mela.simulator.DataAction;
 import mela.simulator.DataPopulation;
@@ -25,10 +26,10 @@ public class MELAParameters {
         this(new java.io.StringReader(""));
     }
 
-    public Parameters parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+    public Parameters parseFromFile( String filename, Model m ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
-        return Input();
+        return Input(m);
     }
 
 }
@@ -119,7 +120,7 @@ TOKEN : { <#PARAM_SYMBOL : [".", "+", "-", "*", "/", "%", "^" ]> }
 GRAMMAR RULES
 ***********************************************/
 
-Parameters Input() throws NumberFormatException, RuntimeException, ParseException :
+Parameters Input(Model m) throws NumberFormatException, RuntimeException, ParseException :
 {
 Parameters modelParam = new Parameters();
 StoppingPredicate stoppingPredicate;
@@ -136,7 +137,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
      DataAndMeta data = new DataAndMeta();
      modelParam.setDataHandler(data);}
      <KEYWORD_STOP>
-    stoppingPredicate = StopChoice()
+    stoppingPredicate = StopChoice(m)
     {modelParam.setStoppingPredicate(stoppingPredicate);}
       
     (
@@ -147,8 +148,9 @@ ArrayList<String > nameActions = new ArrayList< String >();
     (<COMMA>
     population2 = <IDENTIFIER>
     {nameAgents.add(population2.image); })*
-    { DataPopulation dataPop = new DataPopulation();
-    dataPop.setNames(nameAgents); }
+    {DataPopulation dataPop = new DataPopulation();
+    dataPop.setNames(nameAgents);
+    modelParam.setDataPopulation(dataPop);}
     )?
     
     (
@@ -160,13 +162,14 @@ ArrayList<String > nameActions = new ArrayList< String >();
     action2 = <IDENTIFIER>
     {nameActions.add(action2.image); })*
     { DataAction dataAc = new DataAction();
-      dataAc.setNames(nameActions);
+      dataAc.setActions(nameActions);
+      modelParam.setDataAction(dataAc);
       })?
     { return modelParam; }
     <EOF>
 }
 
-StoppingPredicate StopChoice() throws NumberFormatException, RuntimeException, ParseException :
+StoppingPredicate StopChoice(Model m) throws NumberFormatException, RuntimeException, ParseException :
 {Token bound=null, timeTotal=null, timeBound, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
 String  locationName = "[";}
 {   
@@ -192,6 +195,7 @@ String  locationName = "[";}
           newPop.setPopulationName(nameAgent.image);
           double timeBoundValue = Double.parseDouble(timeBound.image);
           newPop.setTimeBound(timeBoundValue);
+          newPop.setModel(m);
           return newPop;
         }       
         |
@@ -219,6 +223,7 @@ String  locationName = "[";}
           newPopLoc.setLocationName(locationName);
           double timeBoundValue = Double.parseDouble(timeBound.image);
           newPopLoc.setTimeBound(timeBoundValue);
+          newPopLoc.setModel(m);
           return newPopLoc;
         }              
         |   

@@ -28,7 +28,7 @@ public class Trajectory {
 	 * @param dt: time elapsed
 	 * @param state: current state of the system
 	 */
-	public void add(ActionInfo info, double dt, State state) {
+	public void add(String info, double dt, State state) {
 		this.currentTime += dt;
 		this.add(info,state);
 	}
@@ -37,7 +37,7 @@ public class Trajectory {
 	 * @param info: info regarding the performed action
 	 * @param state: current state of the system
 	 */
-	private void add(ActionInfo info, State state) {
+	private void add(String info, State state) {
 		this.data.add(new TrajectoryStep(info, currentTime, state));
 	}
 
@@ -47,18 +47,18 @@ public class Trajectory {
 	
 	public class TrajectoryStep {
 		
-		private ActionInfo info;		
+		private String info;		
 		private double time;
 		private State s;
 
-		public TrajectoryStep(ActionInfo info, double time, State s) {
+		public TrajectoryStep(String info, double time, State s) {
 			super();
 			this.info = info;
 			this.time = time;
 			this.s = s;
 		}
 
-		public ActionInfo getActionInfo() {
+		public String getActionInfo() {
 			return info;
 		}
 

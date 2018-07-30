@@ -16,9 +16,9 @@ public class Transition {
 	
 	private final double rate;
 	private final List<AgentVariation> v;
-	private final ActionInfo actionInfo;
+	private final String actionInfo;
 	
-	public Transition(double rate, List<AgentVariation> v, ActionInfo actionInfo) {
+	public Transition(double rate, List<AgentVariation> v, String actionInfo) {
 		super();
 		this.rate = rate;
 		this.v = v;
@@ -33,7 +33,7 @@ public class Transition {
 		return v;
 	}
 
-	public ActionInfo getInfo() {
+	public String getInfo() {
 		return actionInfo;
 	}
 	

@@ -1,4 +1,4 @@
-#Space: OneD(2)
+#Space: TwoD(2,2)
 #Boundary: periodic
 
 #Parameters
@@ -12,8 +12,10 @@ e = 0.0;
 
 P(l) := <-(env,p)<<P(l);
 
-Q(l) := ->{l}(env,r).Q(l);
+#Environment
+
+D := ->{all}(env,r).D;
 
 #Initial conditions
-P(1)[10]||P(0)[10]||Q(1)[1]
+P(1,1)[10]||P(0,0)[10]||D[1]
 

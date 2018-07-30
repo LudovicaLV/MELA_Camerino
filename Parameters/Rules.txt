@@ -1,8 +1,13 @@
-#Runs = 2
+#Runs = 1
 
 #Stopping Predicate
 
-#Time : 10.0
+#ActionCount : env = 10
 
+#Time bound = 10.0
+
+#Total population: P, Q
+
+#Action: env
 
 

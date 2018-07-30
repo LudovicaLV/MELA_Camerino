@@ -23,22 +23,16 @@ import mela.simulator.Simulator;
  * @author ludovicaluisavissat
  *
  */
-public class TestMELAParser {
+public class TestMELAParser2 {
 	
 	Model m = new Model();
 	Parameters p = new Parameters();
-	
-	
-	//ADD CHECK for rules (population and action count - do they exist? if not throw error!)
-	
-	// FIX dataAction handler
-	
 	
 	//tests for LocationManager
 	@Test
 	public void testParser() throws ParseException {
 		 MELAparser ParserMELA= new MELAparser();
-		 String filenameModel = "./Models/SIR.mela";
+		 String filenameModel = "./Models/SIR2.mela";
 		 String filenameParam = "./Parameters/Rules.txt";
 		 m = ParserMELA.parseFromFile(filenameModel);
 		 MELAParameters ParserParameters = new MELAParameters();
@@ -48,9 +42,9 @@ public class TestMELAParser {
 		 simulatorMELA.simulate(m, p);
 		 //number of locations
 		 int s = m.getLocationManager().size();	
-		 assertEquals(s,2);
+		 assertEquals(s,4);
 //		 //connection among locations
-		 boolean edge = m.getLocationManager().edge("[0]", "[1]");
+		 boolean edge = m.getLocationManager().edge("[0, 0]", "[0, 1]");
 		 assertEquals(edge, true);
 //		 //get name
 //		 String name =  m.getLocationManager().getLocationName(10);
@@ -61,7 +55,7 @@ public class TestMELAParser {
 		 
 		 
 		 //to check initial condition
-		 int num = m.getInitCond().apply(0,1);
+		 int num = m.getInitCond().apply(0,3);
 		 assertEquals(num, 10);
 	
 	//test for parameters
@@ -75,7 +69,7 @@ public class TestMELAParser {
 	      int i = m.getAgentManager().agentIndex("P");
 	      assertEquals(i, 0);
 	      
-	      int l = m.getAgentManager().agentIndex("Q");
+	      int l = m.getAgentManager().agentIndex("D");
 	      assertEquals(l, 1);
 	      
 //	      int q = m.getAgentManager().agents.get(0).getRuleList().size();

@@ -44,5 +44,10 @@ public class MovementUpdate implements Update {
 		variations.add(new AgentVariation(src, endLocation, 1));			
 		return variations;
 	}
+	
+	@Override
+	public int getIndexAgent(){
+		return src;
+	}
 
 }

@@ -66,8 +66,8 @@ public class InfluenceRule implements Rule {
 			if (passiveMul > 0) {
 				List<UpdateItem> passiveUpdateItems = passive.computeUpdateItems(locationManager, l2);
 				addTransitions( toReturn , rate*passiveProb*activeMul*passiveMul , activeUpdateItems , passiveUpdateItems );
-				//TODO: Built here the appropriate  ActionInfo
-				toReturn.add(new Transition(rate*(1-passiveProb)*activeMul*passiveMul, new LinkedList<>(), new ActionInfo()));
+				String infoRule = "No change";
+				toReturn.add(new Transition(rate*(1-passiveProb)*activeMul*passiveMul, new LinkedList<>(), infoRule));
 			}
 		}
 		return toReturn;
@@ -85,8 +85,9 @@ public class InfluenceRule implements Rule {
 			for (UpdateItem activeItem : activeUpdateItems) {
 				LinkedList<AgentVariation> variations = new LinkedList<>();
 				variations.addAll(passiveItem.getVariations());
-				variations.addAll(activeItem.getVariations());				
-				toReturn.add(new Transition(rate*passiveItem.getProb()*activeItem.getProb(), variations, new ActionInfo()));
+				variations.addAll(activeItem.getVariations());	
+				String infoRule = info;
+				toReturn.add(new Transition(rate*passiveItem.getProb()*activeItem.getProb(), variations, infoRule));
 			}
 		}		
 

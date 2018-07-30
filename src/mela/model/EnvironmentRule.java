@@ -29,7 +29,7 @@ public class EnvironmentRule implements Rule {
 
 	/**
 	 * info: information about the action, for metadata
-	 * agentIndex: index of passive agent
+	 * agentIndex: index of active agent
 	 * step: index and update for the agent
 	 * rate: rate of the action
 	 * environmentSet: to evaluate if the passive agent is in a location under the environment influence
@@ -59,10 +59,14 @@ public class EnvironmentRule implements Rule {
 			for (UpdateItem updateItem : updateItems) {
 				List<AgentVariation> variations = updateItem.getVariations();
 				//TODO: Built here the appropriate  ActionInfo
-				toReturn.add(new Transition(rate*current.get(agentIndex, l)*updateItem.getProb()*effectProb, variations, new ActionInfo()));
+				int passAgentIndex = step.getAgentIndex();
+				String infoRule = info;
+				toReturn.add(new Transition(rate*current.get(passAgentIndex, l)*updateItem.getProb()*effectProb, variations, infoRule));
 			}
 			//TODO: Built here the appropriate  ActionInfo
-			toReturn.add(new Transition(rate*current.get(agentIndex, l)*(1-effectProb), new LinkedList<>(), new ActionInfo()));
+			int passAgentIndex = step.getAgentIndex();
+			String infoRule = "No change";
+			toReturn.add(new Transition(rate*current.get(passAgentIndex, l)*(1-effectProb), new LinkedList<>(), infoRule));
 		}
 		return toReturn;
 	}
@@ -79,7 +83,9 @@ public class EnvironmentRule implements Rule {
 
     public static void createAddEnvRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){
     	 String info = nameAction + " " + map.get(nameAction).getType();
-         String passAgentName = map.get(nameAction).getAgentPerformingPassive();
+	     String agentName = map.get(nameAction).getAgentPerformingActive();
+	     int agentIndex = am.agentIndex(agentName);
+    	 String passAgentName = map.get(nameAction).getAgentPerformingPassive();
          int agentIndexPass = am.agentIndex(passAgentName);
          Update updatePassive = map.get(nameAction).getUpdatePassive();
          AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
@@ -94,8 +100,8 @@ public class EnvironmentRule implements Rule {
 	     double rate = parameters.get(rateName);
          String passProbName = map.get(nameAction).getProbName();
          double passProb = parameters.get(passProbName);
-         EnvironmentRule newEnv = new EnvironmentRule(info, agentIndexPass, passiveStep, rate, environmentSet, passProb);
-         am.directory.get(passAgentName).addRule(newEnv);    	
+         EnvironmentRule newEnv = new EnvironmentRule(info, agentIndex, passiveStep, rate, environmentSet, passProb);
+         am.directory.get(passAgentName).addRule(newEnv); 
     }
 
 

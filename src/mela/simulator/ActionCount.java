@@ -15,11 +15,13 @@ public class ActionCount implements StoppingPredicate{
 	private int count;
 	private double timeBound;
 		
+	private int countAction = 0;
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		//boolean toReturn = ((Simulator.count(nameAction) < count) 	|| (timeBoundOver(time)));
-		//TODO fix this
-		boolean toReturn = false;
+		if (Simulator.getNameAction() == nameAction ){
+			countAction++;
+		}
+		boolean toReturn = ((countAction < count) && (timeBoundOver(time)));
 		return toReturn;
 		
 	}

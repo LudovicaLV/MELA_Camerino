@@ -17,6 +17,7 @@ import mela.model.State;
 public class Simulator {
 	
 	private Random random;
+	public static String nameAction;
 
 	public Simulator( Random random ) {
 		this.random = random;
@@ -30,12 +31,20 @@ public class Simulator {
 	public void simulate( Model m , Parameters p ) {
 		int iterations = p.getSimulationRuns();
 		DataHandler handler = p.getDataHandler();
-		handler.start(iterations);
+		DataPopulation handlerPop = p.getDataPopulation();
+		DataAction handlerAc = p.getDataAction();
+//		handler.start(iterations);
+//		handlerPop.start(iterations);
+//		handlerAc.start(iterations);
 		for( int i=0 ; i<iterations ; i++ ) {
 			Trajectory t = computeTrajectory( m , p.getStopPredicate() );
-			handler.add(t, i);
+			handler.add(t, i, m);
+			handlerPop.add(t, i, m);
+			//handlerAc.add(t, i, m);
 		}
-		handler.commit();
+//		handler.commit();
+//		handlerPop.commit();
+//		handlerAc.commit();
 	}
 	
 	/**
@@ -47,14 +56,13 @@ public class Simulator {
 	 * 
 	 */
 	public Trajectory computeTrajectory(Model m, StoppingPredicate stopPredicate) {
-		//TODO - check implementation getInitialState()
 		State current = m.getInitialState();
 		int steps = 0;
 		Trajectory t = new Trajectory(0.0,current);
 		boolean flag = true;
 		while (flag && stopPredicate.continueSimulation(current, steps, t.getTime())) {
-			List<Transition> enabled = m.getTransitions( current );
-			double totalRate = getTotalRate(enabled);
+			List<Transition> enabled = m.getTransitions( current );	
+			double totalRate = getTotalRate(enabled);	
 			if (totalRate != 0) {
 				double u1 = randomValue();
 				double u2 = randomValue();
@@ -62,10 +70,8 @@ public class Simulator {
 				double dt = (1/totalRate)*Math.log(1/u2);
 				current = transition.apply(current);
 				t.add(transition.getInfo(),dt,current);
-				steps++;				
-				
-				//increase action count - how to deal with ActionCount here?
-				
+				steps++;	
+				nameAction = transition.getInfo().substring(0, transition.getInfo().indexOf(' '));				
 			} else {
 				flag = false;
 			}			
@@ -114,6 +120,10 @@ public class Simulator {
 		//TODO fix this once we have the parser
 		//MELAParser parser = MELAParser.getInstance();
 		//simulate(parser.parseModel(modelFile),parser.parseParameters(parametersFile));
+	}
+	
+	public static String getNameAction(){
+		return nameAction;
 	}
 
 }

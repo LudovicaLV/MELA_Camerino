@@ -44,7 +44,8 @@ public class NoInfluenceRule implements Rule {
 		List<UpdateItem> updateItems = update.computeUpdateItems(locationManager, l);
 		for (UpdateItem updateItem : updateItems) {
 			List<AgentVariation> variations = updateItem.getVariations();
-			toReturn.add(new Transition(rate*current.get(agentIndex, l)*updateItem.getProb(), variations, new ActionInfo()));
+			String infoRule = info;
+			toReturn.add(new Transition(rate*current.get(agentIndex, l)*updateItem.getProb(), variations, infoRule));
 		}
 		return toReturn;
 	}

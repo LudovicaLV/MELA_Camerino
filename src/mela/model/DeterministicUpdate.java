@@ -42,5 +42,10 @@ public class DeterministicUpdate implements Update {
 		toReturn.add(new UpdateItem(1.0, variations));
 		return toReturn;
 	}
+
+	@Override
+	public int getIndexAgent(){
+		return src;
+	}
 	
 }

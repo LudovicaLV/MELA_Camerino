@@ -105,9 +105,6 @@ public class AllActionInfo {
 		return envPredicate;
 	}
 	
-
-	
-	
 	public static ArrayList<Integer> createList (int x){
 		ArrayList<Integer> newList = new ArrayList<Integer>();
 		newList.add(x);

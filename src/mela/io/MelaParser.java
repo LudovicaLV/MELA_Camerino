@@ -92,12 +92,6 @@ MODEL STRUCTURE
     jj_consume_token(SECTION_INIT);
      HashMap<Integer,HashMap<Integer,Integer>> alllocationMap = Init(m);
      m.setAgentLocationFunction( alllocationMap );
-     
-     
-     for (String name : allActionInfo.keySet()){
- 	 System.out.println(name + " " + allActionInfo.get(name).getRateName());
-  }
-     
      //building the rules
     //get the type, build the rule dependent on that
     for (String nameAction : allActionInfo.keySet()) {
@@ -343,7 +337,6 @@ AGENTS
       agent = am.addAgent(t.image);
     jj_consume_token(DEFINE);
     actionToStore(agent, allActionInfo, am, lm);
-     System.out.println(allActionInfo);
     label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -356,7 +349,6 @@ AGENTS
       }
       jj_consume_token(PLUS);
       actionToStore(agent, allActionInfo, am, lm);
-         System.out.println(allActionInfo);
     }
     jj_consume_token(EOL);
   }
@@ -722,17 +714,13 @@ Predicate<Integer> envset;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case KEYWORD_ALL:
     case LR:
-    case COMMA:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case KEYWORD_ALL:
         toRead = jj_consume_token(KEYWORD_ALL);
          envPred = EnvironmentRule.allPredicate();
         break;
-      case COMMA:
-        toRead = jj_consume_token(COMMA);
-        break;
       case LR:
-        jj_consume_token(LR);
+        toRead = jj_consume_token(LR);
          envPred = loc(allActionInfo, lm);
         break;
       default:
@@ -755,9 +743,10 @@ Predicate<Integer> envset;
   String locationName;
   String locationName2;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case LR:
-      jj_consume_token(LR);
-      locationName = locName();
+    case RR:
+    case INT:
+      //necessary (), not ideal for graph and OneD - solve it!
+              locationName = locName();
          int ind = lm.getIndexFromName(locationName);
         listIndex.add(ind);
       jj_consume_token(RR);
@@ -786,7 +775,7 @@ Predicate<Integer> envset;
 
   final public String locName() throws ParseException, NumberFormatException, RuntimeException, ParseException {
   Token x, y, z = null;
-  String locationName = "";
+  String locationName = "[";
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INT:
       x = jj_consume_token(INT);
@@ -811,6 +800,7 @@ Predicate<Integer> envset;
         jj_la1[27] = jj_gen;
         ;
       }
+      locationName += "]";
       break;
     default:
       jj_la1[28] = jj_gen;
@@ -1061,7 +1051,7 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
       jj_la1_0 = new int[] {0x0,0x0,0x20000,0x1e00000,0x0,0x0,0xc000000,0xc000000,0x0,0x0,0x0,0x0,0x0,0x0,0x90000000,0x90000000,0x0,0x0,0x70000000,0x70000000,0x0,0x0,0x40000000,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x2000000,0x2000000,0x0,0x0,0x8000,0x8000,0x0,0x0,0x100,0x2,0x110100,0x40000,0x680004,0x680004,0x0,0x0,0x100,0x40000,0x0,0x0,0x40000,0x2,0x8100,0x8100,0x8000,0x100,0x8000,0x8000,0x800000,0x40000,0x8000,0x8000,0x100,};
+      jj_la1_1 = new int[] {0x2000000,0x2000000,0x0,0x0,0x8000,0x8000,0x0,0x0,0x100,0x2,0x110100,0x40000,0x680004,0x680004,0x0,0x0,0x100,0x40000,0x0,0x0,0x40000,0x2,0x100,0x100,0x8000,0x800200,0x8000,0x8000,0x800000,0x40000,0x8000,0x8000,0x100,};
    }
    private static void jj_la1_init_2() {
       jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};

@@ -2,7 +2,7 @@
  * 
  */
 package mela.simulator;
-
+import mela.model.Model;
 import mela.model.State;
 
 /**
@@ -14,20 +14,19 @@ public class PopulationLocation implements StoppingPredicate {
 	private String agentName;
 	private String locationName;
 	private double timeBound;
+	private Model m;
 	
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = (agentExist(agentName, locationName, s) || (timeBoundOver(time)));
+		boolean toReturn = (agentExist(agentName, locationName, s) && (timeBoundOver(time)));
 		return toReturn;
 		
 	}
 		
 	public boolean agentExist (String agentName, String locationName, State s){
-		//TODO fix this
-		//int agentIndex = agentManager.agentIndex(agentName);
-		//int locationIndex = locationManager.getIndexFromName(locationName);
-		int agentIndex = 0;
-		int locationIndex = 0;
+		int agentIndex = m.getAgentManager().agentIndex(agentName);
+		int locationIndex = m.getLocationManager().getIndexFromName(locationName);
+		//TODO verify locationName here
 		if (s.get(agentIndex, locationIndex) != 0){
 			return true;				
 		}
@@ -50,6 +49,10 @@ public class PopulationLocation implements StoppingPredicate {
 	public boolean timeBoundOver (double timeToCheck){
 		boolean check = timeToCheck < timeBound;
 		return check;
+	}	
+
+	public void setModel(Model m) {
+		this.m = m;		
 	}
 	
 }

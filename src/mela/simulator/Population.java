@@ -3,6 +3,7 @@
  */
 package mela.simulator;
 
+import mela.model.Model;
 import mela.model.State;
 
 /**
@@ -13,17 +14,16 @@ public class Population implements StoppingPredicate {
 	
 	private String agentName;
 	private double timeBound;
+	private Model m;
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = ( agentExist(agentName, s) || (timeBoundOver(time)));
+		boolean toReturn = ( agentExist(agentName, s) && (timeBoundOver(time)));
 		return toReturn;
 		
 	}
 	
 	public boolean agentExist (String agentName, State s){
-		//TODO fix this
-		//int agentIndex = agentManager.agentIndex(agentName);
-		int agentIndex = 0;
+		int agentIndex = m.getAgentManager().agentIndex(agentName);
 		for (int i=0; i < s.numberLocations(); i++){
 			if (s.get(agentIndex, i) != 0){
 				return true;				
@@ -43,6 +43,10 @@ public class Population implements StoppingPredicate {
 	public boolean timeBoundOver (double timeToCheck){
 		boolean check = timeToCheck < timeBound;
 		return check;
+	}
+
+	public void setModel(Model m) {
+		this.m = m;		
 	}
 	
 

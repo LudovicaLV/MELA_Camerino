@@ -3,13 +3,15 @@
  */
 package mela.simulator;
 
+import mela.model.Model;
 import mela.model.State;
 
 /**
  * @author ludovicaluisavissat
  *
  */
-public interface StoppingPredicate {
+public interface StoppingPredicate  {
+
 	
 	/**
 	 * @param s: current state of the system

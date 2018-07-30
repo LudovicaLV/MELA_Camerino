@@ -16,7 +16,7 @@ public class StepsPredicate implements StoppingPredicate {
 
 	
 	public boolean continueSimulation( State s , int steps , double time ){
-		boolean toReturn = ((steps < numberSteps)	|| (timeBoundOver(time)));
+		boolean toReturn = ((steps < numberSteps) && (timeBoundOver(time)));
 		return toReturn;
 		
 	}

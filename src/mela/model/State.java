@@ -55,7 +55,7 @@ public class State {
     public State apply( List<AgentVariation> updates ) {
     	int[][] newState = copyState();
     	for (AgentVariation av : updates) {
-			newState[av.getAgentIndex() ][av.getLocationIndex()] += av.getVariation();
+    		newState[av.getAgentIndex() ][av.getLocationIndex()] += av.getVariation();
 		}
     	return new State(this.agents,this.locations,newState);
     }

@@ -3,6 +3,7 @@ package mela.io;
 
 import java.util.ArrayList;
 
+import mela.model.Model;
 import mela.simulator.ActionCount;
 import mela.simulator.DataAction;
 import mela.simulator.DataPopulation;
@@ -20,16 +21,16 @@ public class MELAParameters implements MELAParametersConstants {
         this(new java.io.StringReader(""));
     }
 
-    public Parameters parseFromFile( String filename ) throws ParseException, TokenMgrError, NumberFormatException {
+    public Parameters parseFromFile( String filename, Model m ) throws ParseException, TokenMgrError, NumberFormatException {
         try { this.ReInit(new java.io.FileReader(filename)); }
         catch(java.io.IOException e) {throw new ParseException("Error while opening file " + filename + ": " + e); }
-        return Input();
+        return Input(m);
     }
 
 /***********************************************
 GRAMMAR RULES
 ***********************************************/
-  final public Parameters Input() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public Parameters Input(Model m) throws ParseException, NumberFormatException, RuntimeException, ParseException {
 Parameters modelParam = new Parameters();
 StoppingPredicate stoppingPredicate;
 Token population, population2, action, action2, runs;
@@ -43,7 +44,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
      DataAndMeta data = new DataAndMeta();
      modelParam.setDataHandler(data);
     jj_consume_token(KEYWORD_STOP);
-    stoppingPredicate = StopChoice();
+    stoppingPredicate = StopChoice(m);
      modelParam.setStoppingPredicate(stoppingPredicate);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case KEYWORD_TOTAL:
@@ -65,8 +66,9 @@ ArrayList<String > nameActions = new ArrayList< String >();
         population2 = jj_consume_token(IDENTIFIER);
      nameAgents.add(population2.image);
       }
-      DataPopulation dataPop = new DataPopulation();
+     DataPopulation dataPop = new DataPopulation();
     dataPop.setNames(nameAgents);
+    modelParam.setDataPopulation(dataPop);
       break;
     default:
       jj_la1[1] = jj_gen;
@@ -93,7 +95,8 @@ ArrayList<String > nameActions = new ArrayList< String >();
      nameActions.add(action2.image);
       }
       DataAction dataAc = new DataAction();
-      dataAc.setNames(nameActions);
+      dataAc.setActions(nameActions);
+      modelParam.setDataAction(dataAc);
       break;
     default:
       jj_la1[3] = jj_gen;
@@ -104,7 +107,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
     throw new Error("Missing return statement in function");
   }
 
-  final public StoppingPredicate StopChoice() throws ParseException, NumberFormatException, RuntimeException, ParseException {
+  final public StoppingPredicate StopChoice(Model m) throws ParseException, NumberFormatException, RuntimeException, ParseException {
  Token bound=null, timeTotal=null, timeBound, nameAgent, actionName=null, actionCount=null, x=null,y=null,z=null, steps;
 String  locationName = "[";
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -132,6 +135,7 @@ String  locationName = "[";
           newPop.setPopulationName(nameAgent.image);
           double timeBoundValue = Double.parseDouble(timeBound.image);
           newPop.setTimeBound(timeBoundValue);
+          newPop.setModel(m);
           {if (true) return newPop;}
       } else if (jj_2_3(2)) {
         bound = jj_consume_token(KEYWORD_POPLOC);
@@ -170,6 +174,7 @@ String  locationName = "[";
           newPopLoc.setLocationName(locationName);
           double timeBoundValue = Double.parseDouble(timeBound.image);
           newPopLoc.setTimeBound(timeBoundValue);
+          newPopLoc.setModel(m);
           {if (true) return newPopLoc;}
       } else if (jj_2_4(2)) {
         bound = jj_consume_token(KEYWORD_ACTION);
@@ -247,18 +252,6 @@ String  locationName = "[";
     finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3_5() {
-    if (jj_scan_token(KEYWORD_STEP)) return true;
-    if (jj_scan_token(ASSIGN)) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_scan_token(KEYWORD_POPLOC)) return true;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
   private boolean jj_3_1() {
     if (jj_scan_token(KEYWORD_TIME)) return true;
     if (jj_scan_token(SEMICOLON)) return true;
@@ -273,6 +266,18 @@ String  locationName = "[";
 
   private boolean jj_3_4() {
     if (jj_scan_token(KEYWORD_ACTION)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_scan_token(KEYWORD_STEP)) return true;
+    if (jj_scan_token(ASSIGN)) return true;
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_scan_token(KEYWORD_POPLOC)) return true;
     if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }
