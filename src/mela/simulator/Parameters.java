@@ -3,6 +3,8 @@
  */
 package mela.simulator;
 
+import java.util.LinkedList;
+
 /**
  * @author ludovicaluisavissat
  *
@@ -11,9 +13,7 @@ public class Parameters {
 	
 	private int numberOfRuns;
 	private StoppingPredicate stopPredicate;
-	private DataHandler dataHandler;
-	private DataPopulation dataPopulation;
-	private DataAction dataAction;
+	private LinkedList<DataHandler> handler;
 
 	public void setSimulationRuns(int numberOfRunsEntry){
 		this.numberOfRuns = numberOfRunsEntry;
@@ -23,17 +23,10 @@ public class Parameters {
 		this.stopPredicate = stopPredicateEntry;
 	}
 	
-	public void setDataHandler(DataHandler dataHandlerEntry){
-		this.dataHandler = dataHandlerEntry;
-	}	
-	
-	public void setDataPopulation(DataPopulation dataPopEntry){
-		this.dataPopulation = dataPopEntry;
+	public void setDataHandler(LinkedList<DataHandler> dataHandlerEntry){
+		this.handler = dataHandlerEntry;
 	}	
 
-	public void setDataAction(DataAction dataActionEntry){
-		this.dataAction = dataActionEntry;
-	}	
 	public int getSimulationRuns() {
 		return numberOfRuns;
 	}
@@ -42,16 +35,9 @@ public class Parameters {
 		return stopPredicate;
 	}
 
-	public DataHandler getDataHandler() {
-		return dataHandler;
+	public LinkedList<DataHandler> getDataHandlerList() {
+		return handler;
 	}
 	
-	public DataPopulation getDataPopulation() {
-		return dataPopulation;
-	}
-
-	public DataAction getDataAction() {
-		return dataAction;
-	}
 
 }

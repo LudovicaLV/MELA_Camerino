@@ -4,6 +4,7 @@
 package mela.simulator;
 
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -30,21 +31,19 @@ public class Simulator {
 	 */
 	public void simulate( Model m , Parameters p ) {
 		int iterations = p.getSimulationRuns();
-		DataHandler handler = p.getDataHandler();
-		DataPopulation handlerPop = p.getDataPopulation();
-		DataAction handlerAc = p.getDataAction();
-//		handler.start(iterations);
-//		handlerPop.start(iterations);
-//		handlerAc.start(iterations);
+		LinkedList<DataHandler> handler = p.getDataHandlerList();
+		for (DataHandler datahandler : handler){
+			datahandler.start(iterations);
+		}
 		for( int i=0 ; i<iterations ; i++ ) {
 			Trajectory t = computeTrajectory( m , p.getStopPredicate() );
-			handler.add(t, i, m);
-			handlerPop.add(t, i, m);
-			//handlerAc.add(t, i, m);
+			for (DataHandler datahandler : handler){
+				datahandler.add(t, i, m);
+			}
 		}
-//		handler.commit();
-//		handlerPop.commit();
-//		handlerAc.commit();
+		for (DataHandler datahandler : handler){
+			datahandler.commit();
+		}
 	}
 	
 	/**

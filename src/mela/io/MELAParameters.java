@@ -2,6 +2,7 @@
 package mela.io;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import mela.model.Model;
 import mela.simulator.ActionCount;
@@ -14,6 +15,7 @@ import mela.simulator.StepsPredicate;
 import mela.simulator.StoppingPredicate;
 import mela.simulator.TemporalHorizon;
 import mela.simulator.DataAndMeta;
+import mela.simulator.DataHandler;
 
 public class MELAParameters implements MELAParametersConstants {
 
@@ -36,13 +38,14 @@ StoppingPredicate stoppingPredicate;
 Token population, population2, action, action2, runs;
 ArrayList<String > nameAgents = new ArrayList< String >();
 ArrayList<String > nameActions = new ArrayList< String >();
+LinkedList<DataHandler> listDataHandler = new LinkedList< DataHandler >();
     jj_consume_token(KEYWORD_RUN);
     jj_consume_token(ASSIGN);
     runs = jj_consume_token(INT);
      int runsValue = Integer.parseInt(runs.image);
      modelParam.setSimulationRuns(runsValue);
      DataAndMeta data = new DataAndMeta();
-     modelParam.setDataHandler(data);
+     listDataHandler.add(data);
     jj_consume_token(KEYWORD_STOP);
     stoppingPredicate = StopChoice(m);
      modelParam.setStoppingPredicate(stoppingPredicate);
@@ -68,7 +71,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
       }
      DataPopulation dataPop = new DataPopulation();
     dataPop.setNames(nameAgents);
-    modelParam.setDataPopulation(dataPop);
+    listDataHandler.add(dataPop);
       break;
     default:
       jj_la1[1] = jj_gen;
@@ -96,12 +99,13 @@ ArrayList<String > nameActions = new ArrayList< String >();
       }
       DataAction dataAc = new DataAction();
       dataAc.setActions(nameActions);
-      modelParam.setDataAction(dataAc);
+      listDataHandler.add(dataAc);
       break;
     default:
       jj_la1[3] = jj_gen;
       ;
     }
+      modelParam.setDataHandler(listDataHandler);
       {if (true) return modelParam;}
     jj_consume_token(0);
     throw new Error("Missing return statement in function");
@@ -252,6 +256,18 @@ String  locationName = "[";
     finally { jj_save(4, xla); }
   }
 
+  private boolean jj_3_5() {
+    if (jj_scan_token(KEYWORD_STEP)) return true;
+    if (jj_scan_token(ASSIGN)) return true;
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_scan_token(KEYWORD_POPLOC)) return true;
+    if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
   private boolean jj_3_1() {
     if (jj_scan_token(KEYWORD_TIME)) return true;
     if (jj_scan_token(SEMICOLON)) return true;
@@ -266,18 +282,6 @@ String  locationName = "[";
 
   private boolean jj_3_4() {
     if (jj_scan_token(KEYWORD_ACTION)) return true;
-    if (jj_scan_token(SEMICOLON)) return true;
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_scan_token(KEYWORD_STEP)) return true;
-    if (jj_scan_token(ASSIGN)) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_scan_token(KEYWORD_POPLOC)) return true;
     if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }

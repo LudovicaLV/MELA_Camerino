@@ -7,6 +7,7 @@ PARSER_BEGIN(MELAParameters)
 package mela.io;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import mela.model.Model;
 import mela.simulator.ActionCount;
@@ -19,6 +20,7 @@ import mela.simulator.StepsPredicate;
 import mela.simulator.StoppingPredicate;
 import mela.simulator.TemporalHorizon;
 import mela.simulator.DataAndMeta;
+import mela.simulator.DataHandler;
 
 public class MELAParameters {
        
@@ -127,6 +129,7 @@ StoppingPredicate stoppingPredicate;
 Token population, population2, action, action2, runs;
 ArrayList<String > nameAgents = new ArrayList< String >();
 ArrayList<String > nameActions = new ArrayList< String >();
+LinkedList<DataHandler> listDataHandler = new LinkedList< DataHandler >();
 }
 {   
     <KEYWORD_RUN>
@@ -135,7 +138,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
     {int runsValue = Integer.parseInt(runs.image);
      modelParam.setSimulationRuns(runsValue);
      DataAndMeta data = new DataAndMeta();
-     modelParam.setDataHandler(data);}
+     listDataHandler.add(data);}
      <KEYWORD_STOP>
     stoppingPredicate = StopChoice(m)
     {modelParam.setStoppingPredicate(stoppingPredicate);}
@@ -150,7 +153,7 @@ ArrayList<String > nameActions = new ArrayList< String >();
     {nameAgents.add(population2.image); })*
     {DataPopulation dataPop = new DataPopulation();
     dataPop.setNames(nameAgents);
-    modelParam.setDataPopulation(dataPop);}
+    listDataHandler.add(dataPop);}
     )?
     
     (
@@ -163,9 +166,10 @@ ArrayList<String > nameActions = new ArrayList< String >();
     {nameActions.add(action2.image); })*
     { DataAction dataAc = new DataAction();
       dataAc.setActions(nameActions);
-      modelParam.setDataAction(dataAc);
+      listDataHandler.add(dataAc);
       })?
-    { return modelParam; }
+    { modelParam.setDataHandler(listDataHandler);
+      return modelParam; }
     <EOF>
 }
 
