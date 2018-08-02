@@ -2,12 +2,7 @@
 
 #Stopping Predicate
 
-#ActionCount : env = 10
-
-#Time bound = 10.0
+#Time : 10.0
 
 #Total population: P, Q
-
-#Action: env
-
 

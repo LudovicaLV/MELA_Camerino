@@ -68,6 +68,7 @@ public class Simulator {
 				double u2 = randomValue();
 				Transition transition = select( enabled , totalRate*u1 );
 				double dt = (1/totalRate)*Math.log(1/u2);
+				//System.out.println(transition.getInfo());
 				current = transition.apply(current);
 				t.add(transition.getInfo(),dt,current);
 				steps++;	

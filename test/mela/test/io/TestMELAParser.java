@@ -62,7 +62,7 @@ public class TestMELAParser {
 		 
 		 //to check initial condition
 		 int num = m.getInitCond().apply(0,1);
-		 assertEquals(num, 10);
+		 assertEquals(num, 1);
 	
 	//test for parameters
 //    for (String name : parameters.keySet()){
@@ -73,10 +73,10 @@ public class TestMELAParser {
 	      assertEquals(t,2);
 	      
 	      int i = m.getAgentManager().agentIndex("P");
-	      assertEquals(i, 0);
+	      assertEquals(i, 1);
 	      
 	      int l = m.getAgentManager().agentIndex("Q");
-	      assertEquals(l, 1);
+	      assertEquals(l, 0);
 	      
 //	      int q = m.getAgentManager().agents.get(0).getRuleList().size();
 //	      assertEquals(q,2);

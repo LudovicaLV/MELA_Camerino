@@ -37,6 +37,14 @@ public class MovementUpdate implements Update {
 		}
 		return toReturn;
 	}
+	
+// for random movement on the graph (privacy network)	
+	
+//	Set<Integer> allLoc = locationManager.allTheIndex(); //(current one to exclude?)
+//	double prob = 1.0/allLoc.size();
+//	for (Integer l2 : allLoc) {
+//		toReturn.add(new UpdateItem(prob, getVariation(location,l2)));
+//	}
 
 	private LinkedList<AgentVariation> getVariation(int startLocation, int endLocation) {
 		LinkedList<AgentVariation> variations = new LinkedList<>();

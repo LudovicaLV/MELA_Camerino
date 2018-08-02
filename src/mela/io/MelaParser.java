@@ -565,6 +565,7 @@ int rangeNeighValue = 0;
     allActionInfo.get(nameAction).setUpdateActive(newDet);}
     else if (symbol.image == ".") {
     updateArray.add(am.agentIndex(update.image));
+   // System.out.println(nameAction + " " + am.agentIndex(update.image) + " " + update.image);
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
     allActionInfo.get(nameAction).setUpdateActive(newDet);}
   }
@@ -652,6 +653,7 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
     allActionInfo.get(nameAction).setUpdatePassive(newDet);}
     else if (symbolPass.image == ".") {
     updateArray.add(am.agentIndex(updatePass.image));
+    //System.out.println(nameAction + " " + am.agentIndex(updatePass.image) + " " + updatePass.image);
     DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
     allActionInfo.get(nameAction).setUpdatePassive(newDet);}
   }

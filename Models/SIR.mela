@@ -10,9 +10,11 @@ e = 0.0;
 
 #Agents
 
-P(l) := <-(env,p)<<P(l);
-
 Q(l) := ->{l}(env,r).Q(l);
+
+
+P(l) := <-(env,p).Q(l);
+
 
 #Initial conditions
 P(1)[10]||P(0)[10]||Q(1)[1]
