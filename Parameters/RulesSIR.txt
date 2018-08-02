@@ -1,0 +1,8 @@
+#Runs = 1
+
+#Stopping Predicate
+
+#Time : 10.0
+
+#Total population: S, X, I, R
+

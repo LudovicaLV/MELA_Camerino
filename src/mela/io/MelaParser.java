@@ -376,7 +376,7 @@ AGENTS
   }
 
   final public void StoreNoInfAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
-ArrayList<Integer > updateArray = new ArrayList<Integer >();
+ArrayList<String > updateArray = new ArrayList<String >();
 Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null;
     jj_consume_token(LR);
     name = jj_consume_token(IDENTIFIER);
@@ -390,6 +390,7 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
      newNoInf.setRateName(rateName);
     jj_consume_token(RR);
     symbol = MelaSymbol();
+     newNoInf.setSymbolActive(symbol.image);
     update = jj_consume_token(IDENTIFIER);
     jj_consume_token(LR);
     updateloc = UpdateLoc();
@@ -401,31 +402,25 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
       jj_consume_token(LR);
       updateloc2 = UpdateLoc();
       jj_consume_token(RR);
-        updateArray.add(am.agentIndex(update2.image));
+        updateArray.add(update2.image);
       break;
     default:
       jj_la1[11] = jj_gen;
       ;
     }
-    int agentIndex = am.agentIndex(agent.getName());
     if (symbol.image == "|>") {
-    MovementUpdate newMove = new MovementUpdate(agentIndex);
-    newNoInf.setUpdateActive(newMove);
     allActionInfo.put(name.image, newNoInf);}
     else if (symbol.image == ">>"){
-    updateArray.add(am.agentIndex(update.image));
-    updateArray.add(am.agentIndex(update.image));
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newNoInf.setUpdateActive(newDet);
+    updateArray.add(update.image);
+    updateArray.add(update.image);
+    newNoInf.setUpdateArrayActive(updateArray);
     allActionInfo.put(name.image, newNoInf);}
     else if (symbol.image == "<<"){
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newNoInf.setUpdateActive(newDet);
+    newNoInf.setUpdateArrayActive(updateArray);
     allActionInfo.put(name.image, newNoInf);}
     else if (symbol.image == ".") {
-    updateArray.add(am.agentIndex(update.image));
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newNoInf.setUpdateActive(newDet);
+    updateArray.add(update.image);
+    newNoInf.setUpdateArrayActive(updateArray);
     allActionInfo.put(name.image, newNoInf);
     }
   }
@@ -491,7 +486,7 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
   }
 
   final public void StoreInfAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
-ArrayList<Integer > updateArray = new ArrayList<Integer >();
+ArrayList<String> updateArray = new ArrayList<String>();
 Token rangeNeigh=null, name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null;
 String infset;
 int rangeNeighValue = 0;
@@ -534,6 +529,7 @@ int rangeNeighValue = 0;
      allActionInfo.get(nameAction).setRateName(rateName);
     jj_consume_token(RR);
     symbol = MelaSymbol();
+     allActionInfo.get(nameAction).setSymbolActive(symbol.image);
     update = jj_consume_token(IDENTIFIER);
     jj_consume_token(LR);
     updateloc = UpdateLoc();
@@ -545,29 +541,23 @@ int rangeNeighValue = 0;
       jj_consume_token(LR);
       updateloc2 = UpdateLoc();
       jj_consume_token(RR);
-        updateArray.add(am.agentIndex(update2.image));
+        updateArray.add(update2.image);
       break;
     default:
       jj_la1[17] = jj_gen;
       ;
     }
-    int agentIndex = am.agentIndex(agent.getName());
-    if (symbol.image == "|>") {
-    MovementUpdate newMove = new MovementUpdate(agentIndex);
-    allActionInfo.get(nameAction).setUpdateActive(newMove);}
+    if (symbol.image == "|>") {}
     else if (symbol.image == ">>"){
-    updateArray.add(am.agentIndex(update.image));
-    updateArray.add(am.agentIndex(update.image));
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    updateArray.add(update.image);
+    updateArray.add(update.image);
+    allActionInfo.get(nameAction).setUpdateArrayActive(updateArray);}
     else if (symbol.image == "<<"){
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    allActionInfo.get(nameAction).setUpdateArrayActive(updateArray);}
     else if (symbol.image == ".") {
-    updateArray.add(am.agentIndex(update.image));
-   // System.out.println(nameAction + " " + am.agentIndex(update.image) + " " + update.image);
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    updateArray.add(update.image);
+    allActionInfo.get(nameAction).setUpdateArrayActive(updateArray);
+    }
   }
 
   final public String InfSet(HashMap<String, AllActionInfo> allActionInfo) throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -604,7 +594,7 @@ int rangeNeighValue = 0;
   }
 
   final public void StorePassAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
-ArrayList<Integer > updateArray = new ArrayList<Integer >();
+ArrayList<String> updateArray = new ArrayList<String>();
 Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updatelocPass=null, updatePass2=null, updatelocPass2=null;
     jj_consume_token(LANG);
     jj_consume_token(DASH);
@@ -622,6 +612,7 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
     allActionInfo.get(nameAction).setProbName(probName);
     jj_consume_token(RR);
     symbolPass = MelaSymbol();
+     allActionInfo.get(nameAction).setSymbolPassive(symbolPass.image);
     updatePass = jj_consume_token(IDENTIFIER);
     jj_consume_token(LR);
     updatelocPass = UpdateLoc();
@@ -633,29 +624,23 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
       jj_consume_token(LR);
       updatelocPass2 = UpdateLoc();
       jj_consume_token(RR);
-        updateArray.add(am.agentIndex(updatePass2.image));
+        updateArray.add(updatePass2.image);
       break;
     default:
       jj_la1[20] = jj_gen;
       ;
     }
-    int agentIndex = am.agentIndex(agent.getName());
-    if (symbolPass.image == "|>") {
-    MovementUpdate newMove = new MovementUpdate(agentIndex);
-    allActionInfo.get(nameAction).setUpdatePassive(newMove);}
+    if (symbolPass.image == "|>") {}
     else if (symbolPass.image == ">>"){
-    updateArray.add(am.agentIndex(updatePass.image));
-    updateArray.add(am.agentIndex(updatePass.image));
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    updateArray.add(updatePass.image);
+    updateArray.add(updatePass.image);
+    allActionInfo.get(nameAction).setUpdateArrayPassive(updateArray);}
     else if (symbolPass.image == "<<"){
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    allActionInfo.get(nameAction).setUpdateArrayPassive(updateArray);}
     else if (symbolPass.image == ".") {
-    updateArray.add(am.agentIndex(updatePass.image));
-    //System.out.println(nameAction + " " + am.agentIndex(updatePass.image) + " " + updatePass.image);
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    updateArray.add(updatePass.image);
+    allActionInfo.get(nameAction).setUpdateArrayPassive(updateArray);
+    }
   }
 
   final public void EnvAgent(HashMap<String,AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws ParseException, NumberFormatException, RuntimeException, ParseException {
@@ -952,6 +937,12 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
     finally { jj_save(6, xla); }
   }
 
+  private boolean jj_3R_14() {
+    if (jj_scan_token(LANG)) return true;
+    if (jj_scan_token(DASH)) return true;
+    return false;
+  }
+
   private boolean jj_3_6() {
     if (jj_3R_13()) return true;
     return false;
@@ -989,27 +980,21 @@ HashMap<Integer,HashMap<Integer,Integer>> allLocationMap = new HashMap<Integer,H
     return false;
   }
 
-  private boolean jj_3R_13() {
-    if (jj_scan_token(DASH)) return true;
-    if (jj_scan_token(RANG)) return true;
-    return false;
-  }
-
   private boolean jj_3R_12() {
     if (jj_scan_token(LR)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  private boolean jj_3R_14() {
-    if (jj_scan_token(LANG)) return true;
-    if (jj_scan_token(DASH)) return true;
-    return false;
-  }
-
   private boolean jj_3_2() {
     if (jj_scan_token(KEYWORD_ONED)) return true;
     if (jj_3R_9()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_13() {
+    if (jj_scan_token(DASH)) return true;
+    if (jj_scan_token(RANG)) return true;
     return false;
   }
 

@@ -82,12 +82,23 @@ public class EnvironmentRule implements Rule {
 	
 
     public static void createAddEnvRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){
-    	 String info = nameAction + " " + map.get(nameAction).getType();
+    	Update updatePassive = null; 
+    	String info = nameAction + " " + map.get(nameAction).getType();
 	     String agentName = map.get(nameAction).getAgentPerformingActive();
 	     int agentIndex = am.agentIndex(agentName);
     	 String passAgentName = map.get(nameAction).getAgentPerformingPassive();
          int agentIndexPass = am.agentIndex(passAgentName);
-         Update updatePassive = map.get(nameAction).getUpdatePassive();
+         if (map.get(nameAction).symbolPassive == "|>") {
+			    MovementUpdate newMove = new MovementUpdate(agentIndex);
+			    updatePassive = newMove;
+	       }else{
+	    	ArrayList<Integer> updateArray = new ArrayList<Integer>(); 
+	    	for (int i=0; i< map.get(nameAction).updateArrayPassive.size(); i++){
+	    		String name = map.get(nameAction).updateArrayPassive.get(i);
+	    		updateArray.add(am.agentIndex(name));
+	    	    }
+	    	    updatePassive = new DeterministicUpdate(agentIndex, updateArray);	     	    		    	
+	       } 
          AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
          Predicate<Integer> environmentSet =  map.get(nameAction).getEnvPredicate();
          if (parameters.get(map.get(nameAction).getRateName()) == null) { 

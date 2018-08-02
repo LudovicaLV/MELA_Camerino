@@ -434,7 +434,7 @@ void actionToStore(Agent agent, HashMap<String,AllActionInfo> allActionInfo,  Ag
 
 void StoreNoInfAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
 {
-ArrayList<Integer > updateArray = new ArrayList<Integer >();
+ArrayList<String > updateArray = new ArrayList<String >();
 Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
 }
 {
@@ -450,7 +450,8 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
      newNoInf.setType("no-inf");
      newNoInf.setRateName(rateName); }
     <RR>
-    symbol = MelaSymbol()     
+    symbol = MelaSymbol()
+    {newNoInf.setSymbolActive(symbol.image); }    
     update = <IDENTIFIER>
     <LR>
     updateloc = UpdateLoc()
@@ -460,27 +461,21 @@ Token name = null, rateNameToken = null, symbol=null, update=null, updateloc=nul
       <LR>
       updateloc2 = UpdateLoc()
       <RR>
-      { updateArray.add(am.agentIndex(update2.image)); } 
+      { updateArray.add(update2.image); } 
       )?
-   {int agentIndex = am.agentIndex(agent.getName());
-    if (symbol.image == "|>") {
-    MovementUpdate newMove = new MovementUpdate(agentIndex);
-    newNoInf.setUpdateActive(newMove);
+   {if (symbol.image == "|>") {    
     allActionInfo.put(name.image, newNoInf);}
     else if (symbol.image == ">>"){
-    updateArray.add(am.agentIndex(update.image));
-    updateArray.add(am.agentIndex(update.image));
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newNoInf.setUpdateActive(newDet);
+    updateArray.add(update.image);
+    updateArray.add(update.image);
+    newNoInf.setUpdateArrayActive(updateArray);   
     allActionInfo.put(name.image, newNoInf);}
-    else if (symbol.image == "<<"){  
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newNoInf.setUpdateActive(newDet);
+    else if (symbol.image == "<<"){
+    newNoInf.setUpdateArrayActive(updateArray);
     allActionInfo.put(name.image, newNoInf);}
     else if (symbol.image == ".") {
-    updateArray.add(am.agentIndex(update.image));
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    newNoInf.setUpdateActive(newDet);
+    updateArray.add(update.image);
+    newNoInf.setUpdateArrayActive(updateArray);
     allActionInfo.put(name.image, newNoInf);
     }  
 }
@@ -524,7 +519,7 @@ Token UpdateLoc() throws NumberFormatException, RuntimeException, ParseException
 
 void StoreInfAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
 {
-ArrayList<Integer > updateArray = new ArrayList<Integer >();
+ArrayList<String> updateArray = new ArrayList<String>();
 Token rangeNeigh=null, name = null, rateNameToken = null, symbol=null, update=null, updateloc=null, update2=null, updateloc2=null; 
 String infset;
 int rangeNeighValue = 0;
@@ -562,7 +557,8 @@ int rangeNeighValue = 0;
      allActionInfo.get(nameAction).setType("inf");
      allActionInfo.get(nameAction).setRateName(rateName); }
     <RR>
-    symbol = MelaSymbol()    
+    symbol = MelaSymbol()
+    {allActionInfo.get(nameAction).setSymbolActive(symbol.image); }    
     update = <IDENTIFIER>
     <LR>
     updateloc = UpdateLoc()
@@ -572,24 +568,19 @@ int rangeNeighValue = 0;
       <LR>
       updateloc2 = UpdateLoc()
       <RR>
-      { updateArray.add(am.agentIndex(update2.image)); } 
+      { updateArray.add(update2.image); } 
       )?
-   {int agentIndex = am.agentIndex(agent.getName());
-    if (symbol.image == "|>") {
-    MovementUpdate newMove = new MovementUpdate(agentIndex);
-    allActionInfo.get(nameAction).setUpdateActive(newMove);}
+   {if (symbol.image == "|>") {}
     else if (symbol.image == ">>"){
-    updateArray.add(am.agentIndex(update.image));
-    updateArray.add(am.agentIndex(update.image));  
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdateActive(newDet);}
-    else if (symbol.image == "<<"){ 
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    updateArray.add(update.image);
+    updateArray.add(update.image);
+    allActionInfo.get(nameAction).setUpdateArrayActive(updateArray);}
+    else if (symbol.image == "<<"){
+    allActionInfo.get(nameAction).setUpdateArrayActive(updateArray);}
     else if (symbol.image == ".") {
-    updateArray.add(am.agentIndex(update.image));  
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdateActive(newDet);}
+    updateArray.add(update.image);
+    allActionInfo.get(nameAction).setUpdateArrayActive(updateArray);
+    } 
    }
 }
 
@@ -616,7 +607,7 @@ String InfSet(HashMap<String, AllActionInfo> allActionInfo) throws NumberFormatE
 
 void StorePassAction(Agent agent, HashMap<String, AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
 {
-ArrayList<Integer > updateArray = new ArrayList<Integer >();
+ArrayList<String> updateArray = new ArrayList<String>();
 Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updatelocPass=null, updatePass2=null, updatelocPass2=null; 
 }
 {
@@ -636,7 +627,8 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
     {String probName = probNameToken.image; 
     allActionInfo.get(nameAction).setProbName(probName); }
     <RR>
-    symbolPass = MelaSymbol() 
+    symbolPass = MelaSymbol()
+    {allActionInfo.get(nameAction).setSymbolPassive(symbolPass.image); }  
     updatePass = <IDENTIFIER>
     <LR>
     updatelocPass = UpdateLoc()
@@ -646,26 +638,23 @@ Token name = null, probNameToken = null, symbolPass=null, updatePass=null, updat
       <LR>
       updatelocPass2 = UpdateLoc()
       <RR>
-      { updateArray.add(am.agentIndex(updatePass2.image)); } 
+      { updateArray.add(updatePass2.image); } 
       )?
-   {int agentIndex = am.agentIndex(agent.getName());
-    if (symbolPass.image == "|>") {
-    MovementUpdate newMove = new MovementUpdate(agentIndex);
-    allActionInfo.get(nameAction).setUpdatePassive(newMove);}
+   {if (symbolPass.image == "|>") {}
     else if (symbolPass.image == ">>"){
-    updateArray.add(am.agentIndex(updatePass.image));
-    updateArray.add(am.agentIndex(updatePass.image)); 
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
-    else if (symbolPass.image == "<<"){ 
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdatePassive(newDet);}
+    updateArray.add(updatePass.image);
+    updateArray.add(updatePass.image);
+    allActionInfo.get(nameAction).setUpdateArrayPassive(updateArray);}
+    else if (symbolPass.image == "<<"){
+    allActionInfo.get(nameAction).setUpdateArrayPassive(updateArray);}
     else if (symbolPass.image == ".") {
-    updateArray.add(am.agentIndex(updatePass.image)); 
-    DeterministicUpdate newDet = new DeterministicUpdate(agentIndex, updateArray);
-    allActionInfo.get(nameAction).setUpdatePassive(newDet);}     
+    updateArray.add(updatePass.image);
+    allActionInfo.get(nameAction).setUpdateArrayPassive(updateArray);
+    } 
+   }
+ 
 }
-}
+
 
 void EnvAgent(HashMap<String,AllActionInfo> allActionInfo, AgentManager am, LocationManager lm) throws NumberFormatException, RuntimeException, ParseException :
 {

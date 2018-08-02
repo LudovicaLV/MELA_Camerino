@@ -3,6 +3,7 @@
  */
 package mela.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -51,21 +52,40 @@ public class NoInfluenceRule implements Rule {
 	}
 	
 	public static void createAddNoInfRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){
-	       String info = nameAction + " " + map.get(nameAction).getType();
+		   String info = nameAction + " " + map.get(nameAction).getType();
 	       String agentName = map.get(nameAction).getAgentPerformingActive();
 	       int agentIndex = am.agentIndex(agentName);
-	       Update update = map.get(nameAction).getUpdateActive();
-	       if (parameters.get(map.get(nameAction).getRateName()) != null) { 
-	       double rate = parameters.get(map.get(nameAction).getRateName()); 	       
-	       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
-	       am.directory.get(agentName).addRule(newNoInf); 
-	       }
-	       else {
-	          throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");
-	       }  
+	       if (map.get(nameAction).symbolActive == "|>") {
+			    MovementUpdate newMove = new MovementUpdate(agentIndex);
+			    Update update = newMove;
+			       if (parameters.get(map.get(nameAction).getRateName()) != null) { 
+				       double rate = parameters.get(map.get(nameAction).getRateName()); 	       
+				       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
+				       am.directory.get(agentName).addRule(newNoInf); 
+				       }
+				       else {
+				          throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");
+				       }  
+	       }else{
+	    	ArrayList<Integer> updateArray = new ArrayList<Integer>(); 
+	    	for (int i=0; i< map.get(nameAction).updateArrayActive.size(); i++){
+	    		String name = map.get(nameAction).updateArrayActive.get(i);
+	    		updateArray.add(am.agentIndex(name));
+	    	    }
+	    	Update update = new DeterministicUpdate(agentIndex, updateArray);	     
+		       if (parameters.get(map.get(nameAction).getRateName()) != null) { 
+			       double rate = parameters.get(map.get(nameAction).getRateName()); 	       
+			       NoInfluenceRule newNoInf = new NoInfluenceRule(info, agentIndex, rate, update);
+			       am.directory.get(agentName).addRule(newNoInf); 
+			       }
+			       else {
+			          throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");
+			       } 	    		    	
+	       } 
 	}
 	
 	
+
 
 
 }

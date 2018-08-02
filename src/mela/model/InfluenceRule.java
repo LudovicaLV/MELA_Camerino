@@ -94,15 +94,37 @@ public class InfluenceRule implements Rule {
 	}
 	
 	public static void createAddInfRule(HashMap<String, AllActionInfo> map, String nameAction, AgentManager am, HashMap<String, Double> parameters){		
-	       String info = nameAction + " " + map.get(nameAction).getType();
+		Update updateActive = null;
+		Update updatePassive = null;
+		String info = nameAction + " " + map.get(nameAction).getType();
 	       String agentName = map.get(nameAction).getAgentPerformingActive();
-	       int agentIndex = am.agentIndex(agentName);
-	       Update updateActive = map.get(nameAction).getUpdateActive();
+	       int agentIndex = am.agentIndex(agentName);	      
+	       if (map.get(nameAction).symbolActive == "|>") {
+			    MovementUpdate newMove = new MovementUpdate(agentIndex);
+			    updateActive = newMove;
+	       }else{
+	    	ArrayList<Integer> updateArray = new ArrayList<Integer>(); 
+	    	for (int i=0; i< map.get(nameAction).updateArrayActive.size(); i++){
+	    		String name = map.get(nameAction).updateArrayActive.get(i);
+	    		updateArray.add(am.agentIndex(name));
+	    	    }
+	    	    updateActive = new DeterministicUpdate(agentIndex, updateArray);	     	    		    	
+	       } 
 	       AgentStep activeStep = new AgentStep(agentIndex, updateActive);
 	       BiFunction<Integer,LocationManager,List<Integer>> influenceFunction = map.get(nameAction).getInfSet();
 	       String passAgentName = map.get(nameAction).getAgentPerformingPassive();
 	       int agentIndexPass = am.agentIndex(passAgentName);
-	       Update updatePassive = map.get(nameAction).getUpdatePassive();
+	       if (map.get(nameAction).symbolPassive == "|>") {
+			    MovementUpdate newMove = new MovementUpdate(agentIndex);
+			    updatePassive = newMove;
+	       }else{
+	    	ArrayList<Integer> updateArrayPass = new ArrayList<Integer>(); 
+	    	for (int i=0; i< map.get(nameAction).updateArrayPassive.size(); i++){
+	    		String name = map.get(nameAction).updateArrayPassive.get(i);
+	    		updateArrayPass.add(am.agentIndex(name));
+	    	    }
+	    	    updatePassive = new DeterministicUpdate(agentIndexPass, updateArrayPass);	     	    		    	
+	       } 
 	       AgentStep passiveStep = new AgentStep(agentIndexPass, updatePassive);
 	       if (parameters.get(map.get(nameAction).getRateName()) == null) { 
 	    	   throw new Error("Parameter " + map.get(nameAction).getRateName() + " is not defined.");

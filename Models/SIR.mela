@@ -10,9 +10,10 @@ e = 0.0;
 
 #Agents
 
-Q(l) := ->{l}(env,r).Q(l);
 
 
+
+Q(l) := ->{l}(env,r).P(l);
 P(l) := <-(env,p).Q(l);
 
 

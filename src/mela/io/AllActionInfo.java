@@ -24,8 +24,12 @@ public class AllActionInfo {
 	public String type;
 	public String rateName;
 	public String probName;
-	public Update updateActive;
-	public Update updatePassive;
+//	public Update updateActive;
+//	public Update updatePassive;
+	public String symbolActive;
+	public ArrayList<String> updateArrayActive = new ArrayList<String>();
+	public String symbolPassive;
+	public ArrayList<String> updateArrayPassive = new ArrayList<String>();	
 	public BiFunction<Integer,LocationManager,List<Integer>> infSet;
 	public Predicate<Integer> envPredicate;
 		
@@ -45,11 +49,18 @@ public class AllActionInfo {
 	public void setProbName(String probName) {
 		this.probName = probName;
 	}
-	public void setUpdateActive(Update updateActive) {
-		this.updateActive = updateActive;
+	
+	public void setSymbolActive(String symbolActive) {
+		this.symbolActive = symbolActive;
 	}
-	public void setUpdatePassive(Update updatePassive) {
-		this.updatePassive = updatePassive;
+	public void setUpdateArrayActive(ArrayList<String> updateArrayActive) {
+		this.updateArrayActive = updateArrayActive;
+	}
+	public void setSymbolPassive(String symbolPassive) {
+		this.symbolPassive = symbolPassive;
+	}
+	public void setUpdateArrayPassive(ArrayList<String> updateArrayPassive) {
+		this.updateArrayPassive = updateArrayPassive;
 	}
 	
 	//depending on the influence set
@@ -92,11 +103,17 @@ public class AllActionInfo {
 	public String getProbName() {
 		return probName;
 	}
-	public Update getUpdateActive() {
-		return updateActive;
+	public String getSymbolActive() {
+		return symbolActive;
 	}
-	public Update getUpdatePassive() {
-		return updatePassive;
+	public ArrayList<String> getUpdateArrayActive() {
+		return updateArrayActive;
+	}
+	public String getSymbolPassive() {
+		return symbolPassive;
+	}
+	public ArrayList<String> getUpdateArrayPassive() {
+		return updateArrayPassive;
 	}
 	public BiFunction<Integer, LocationManager, List<Integer>> getInfSet() {
 		return infSet;
@@ -115,5 +132,7 @@ public class AllActionInfo {
 		return "AllActionInfo [agentPerformingActive=" + agentPerformingActive + ", agentPerformingPassive="
 				+ agentPerformingPassive + ", type=" + type + ", rateName=" + rateName + ", probName=" + probName + "]";
 	}
+
+
 
 }

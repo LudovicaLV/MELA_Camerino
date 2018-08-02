@@ -1,0 +1,21 @@
+#Space: TwoD(1,1)
+#Boundary: bouncing
+
+#Parameters
+c = 1.0;
+p = 1.0;
+i = 1.0;
+r = 1.0;
+
+#Agents
+S(l) := <-(contact,p).X(l);
+
+X(l) := (inf,i).I(l);
+
+I(l) := ->{l}(contact,c).I(l) + (recover,r).R(l);
+
+R(l) := ;
+
+
+#Initial conditions
+S(0,0)[90]||I(0,0)[10]
